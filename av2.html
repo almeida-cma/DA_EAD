@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação de POO - Sistema de Biblioteca (Parte 2)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f0eb;
+            color: #1a1a2e;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            background: linear-gradient(135deg, #1a5c3a, #2e7d5a);
+            border-radius: 16px;
+            margin-bottom: 30px;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+        .header h1 span {
+            color: #ffd54f;
+        }
+        .header p {
+            font-size: 1.05rem;
+            opacity: 0.9;
+        }
+        .header .badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8e0d8;
+        }
+
+        .progress-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .progress-info span {
+            font-weight: 600;
+            color: #1a5c3a;
+        }
+        .progress-bar-bg {
+            width: 300px;
+            height: 8px;
+            background: #e8e0d8;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1a5c3a, #4caf7a);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .nav-buttons button {
+            background: #f0ebe6;
+            border: 2px solid #d5cdc4;
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            min-width: 32px;
+        }
+        .nav-buttons button:hover {
+            background: #e0d8d0;
+            border-color: #1a5c3a;
+        }
+        .nav-buttons button.active {
+            background: #1a5c3a;
+            color: #fff;
+            border-color: #1a5c3a;
+        }
+        .nav-buttons button.answered-correct {
+            border-color: #2e7d32;
+            background: #e8f5e9;
+        }
+        .nav-buttons button.answered-wrong {
+            border-color: #c62828;
+            background: #ffebee;
+        }
+
+        .question-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 32px 36px;
+            border: 1px solid #e8e0d8;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            margin-bottom: 24px;
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .question-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-number {
+            display: inline-block;
+            background: #1a5c3a;
+            color: #fff;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            margin-bottom: 24px;
+            color: #1a1a2e;
+        }
+        .question-text strong {
+            color: #1a5c3a;
+        }
+
+        .alternatives {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .alternative {
+            background: #f8f5f2;
+            border: 2px solid #d5cdc4;
+            border-radius: 12px;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .alternative:hover:not(.disabled) {
+            border-color: #8a7a6a;
+            background: #f0ebe6;
+        }
+        .alternative.correct {
+            border-color: #2e7d32;
+            background: #e8f5e9;
+        }
+        .alternative.wrong {
+            border-color: #c62828;
+            background: #ffebee;
+        }
+        .alternative.revealed-correct {
+            border-color: #2e7d32;
+            background: #f1f8e9;
+        }
+        .alternative.disabled {
+            cursor: default;
+            opacity: 0.85;
+        }
+        .alternative .letter {
+            display: inline-block;
+            font-weight: 700;
+            color: #1a5c3a;
+            margin-right: 12px;
+            min-width: 20px;
+        }
+        .alternative .text {
+            color: #1a1a2e;
+        }
+        .alternative .status-icon {
+            float: right;
+            font-size: 1.2rem;
+        }
+
+        .explanation-block {
+            background: #f8f5f2;
+            border-radius: 12px;
+            padding: 16px 20px;
+            border-left: 5px solid #1a5c3a;
+            margin-top: 12px;
+            display: none;
+        }
+        .explanation-block.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        .explanation-block .exp-header {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+        .explanation-block .exp-header .tag {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+        .tag-correct {
+            background: #c8e6c9;
+            color: #1b5e20;
+        }
+        .tag-wrong {
+            background: #ffcdd2;
+            color: #b71c1c;
+        }
+        .tag-concept {
+            background: #bbdefb;
+            color: #0d47a1;
+        }
+        .explanation-block .analogy {
+            background: #fff8e1;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border-left: 3px solid #f9a825;
+            margin: 6px 0;
+            color: #4e342e;
+            font-style: italic;
+        }
+        .explanation-block .example {
+            background: #ffffff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+            color: #1a1a2e;
+            margin: 6px 0;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            border: 1px solid #e0d8d0;
+        }
+        .explanation-block .justification {
+            color: #1a1a2e;
+            margin-top: 4px;
+            line-height: 1.6;
+        }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .bottom-nav button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #1a5c3a;
+            color: #fff;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #0f4028;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 92, 58, 0.3);
+        }
+        .btn-secondary {
+            background: #e8e0d8;
+            color: #333;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #d5cdc4;
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .bottom-nav .info {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .summary {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 36px;
+            border: 1px solid #e8e0d8;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            display: none;
+            text-align: center;
+        }
+        .summary.visible {
+            display: block;
+            animation: fadeIn 0.6s ease;
+        }
+        .summary h2 {
+            color: #1a1a2e;
+            font-size: 1.8rem;
+        }
+        .summary .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #f5f0eb;
+            border: 5px solid #1a5c3a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #1a5c3a;
+        }
+        .summary .score-text {
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .summary .score-details {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 24px 0;
+            flex-wrap: wrap;
+        }
+        .summary .score-details div {
+            text-align: center;
+        }
+        .summary .score-details .number {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .summary .score-details .label {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        .summary .green {
+            color: #2e7d32;
+        }
+        .summary .red {
+            color: #c62828;
+        }
+        .summary .orange {
+            color: #e65100;
+        }
+        .summary .btn-restart {
+            margin-top: 20px;
+            padding: 12px 40px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            .question-card {
+                padding: 20px 18px;
+            }
+            .question-text {
+                font-size: 0.95rem;
+            }
+            .progress-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .progress-bar-bg {
+                width: 100%;
+            }
+            .nav-buttons {
+                justify-content: center;
+            }
+            .bottom-nav {
+                flex-direction: column;
+            }
+            .bottom-nav button {
+                width: 100%;
+            }
+            .summary .score-details {
+                gap: 20px;
+            }
+            .alternative {
+                padding: 12px 14px;
+                font-size: 0.9rem;
+            }
+            .explanation-block .example {
+                font-size: 0.7rem;
+                padding: 6px 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            .header p {
+                font-size: 0.9rem;
+            }
+            .question-card {
+                padding: 14px 10px;
+            }
+            .explanation-block {
+                padding: 12px 14px;
+            }
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 10px;
+            }
+            .header {
+                background: #1a5c3a !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .alternative.correct {
+                background: #e8f5e9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .alternative.wrong {
+                background: #ffebee !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .explanation-block {
+                display: block !important;
+            }
+            .bottom-nav {
+                display: none !important;
+            }
+            .nav-buttons {
+                display: none !important;
+            }
+            .progress-container {
+                display: none !important;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5f0eb;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c0b8b0;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a09888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <h1>📚 Avaliação de <span>POO - Sistema de Biblioteca</span></h1>
+            <p>Segunda Atividade • Controle de Empréstimos e Funcionalidades Avançadas • 9 questões</p>
+            <span class="badge">🎯 Clique em uma alternativa → veja a explicação de TODAS as opções</span>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-info">
+                <span id="currentLabel">Questão 1 de 9</span>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressFill"></div>
+                </div>
+            </div>
+            <div class="nav-buttons" id="navButtons"></div>
+        </div>
+
+        <div id="questionsContainer"></div>
+
+        <div class="summary" id="summary">
+            <h2>🏆 Resultado Final</h2>
+            <div class="score-circle" id="scoreCircle">0%</div>
+            <div class="score-text" id="scoreText">Você acertou 0 de 9 questões</div>
+            <div class="score-details">
+                <div><div class="number green" id="correctCount">0</div><div class="label">✅ Corretas</div></div>
+                <div><div class="number red" id="wrongCount">0</div><div class="label">❌ Erradas</div></div>
+                <div><div class="number orange" id="unansweredCount">9</div><div class="label">⏳ Não respondidas</div></div>
+            </div>
+            <button class="btn-primary btn-restart" onclick="restartQuiz()">🔄 Refazer Avaliação</button>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        // DADOS COMPLETOS DAS 9 QUESTÕES - TEXTO INTEGRAL
+        // ============================================================
+
+        const questionsData = [{
+            id: 1,
+            text: `Você está trabalhando no desenvolvimento de um sistema de gerenciamento de biblioteca. O sistema deve ser capaz de gerenciar informações sobre livros, empréstimos, e associados. Uma das funcionalidades críticas é o controle de empréstimos, onde condições específicas devem ser verificadas antes de um livro ser emprestado a um associado. Desafio: O sistema deve implementar uma regra de negócio onde cada associado pode ter no máximo três livros emprestados ao mesmo tempo. Se o associado tentar emprestar um quarto livro, o sistema deve negar o empréstimo e informar o motivo. Esta regra deve ser implementada usando estruturas de controle condicionais em uma linguagem de programação orientada a objetos de sua escolha. Detalhes Adicionais: Enquanto você implementa essa funcionalidade, considere que cada associado tem um registro de empréstimos atual, e a verificação deve ser feita sempre que um novo empréstimo é solicitado. Pense em como a estrutura condicional pode ser utilizada para eficientemente verificar e responder a esta regra de negócio.<br><br><strong>Qual das seguintes implementações em Java representa corretamente a regra de negócio descrita para o sistema de gerenciamento de biblioteca?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'if (associado.getLivrosEmprestados().size() < 3) { biblioteca.emprestarLivro(livro, associado); }' },
+                { letter: 'B', text: 'if (associado.getLivrosEmprestados().size() == 4) { biblioteca.emprestarLivro(livro, associado); }' },
+                { letter: 'C', text: 'if (associado.getLivrosEmprestados().size() > 3) { System.out.println("Limite de empréstimos excedido."); } else { biblioteca.emprestarLivro(livro, associado); }' },
+                { letter: 'D', text: 'associado.getLivrosEmprestados().add(livro); if (associado.getLivrosEmprestados().size() > 3) { System.out.println("Empréstimo realizado com sucesso."); }' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'Estrutura Condicional - Validação Incompleta',
+                    example: `// ❌ Verifica apenas se tem menos de 3\nif (associado.getLivrosEmprestados().size() < 3) {\n    biblioteca.emprestarLivro(livro, associado);\n}\n// Faltou a mensagem de erro quando o limite é excedido`,
+                    analogy: '🚪 Uma porta que só abre se tiver menos de 3 pessoas na sala, mas não avisa quando a sala está cheia. O usuário fica sem saber o que aconteceu.',
+                    justification: 'Esta implementação verifica apenas se o número de livros emprestados é menor que 3, realizando o empréstimo. Porém, não trata o caso em que o limite é excedido (quando size >= 3), deixando o usuário sem saber o motivo da falha.'
+                },
+                B: {
+                    concept: 'Estrutura Condicional - Condição Incorreta',
+                    example: `// ❌ Verifica se tem EXATAMENTE 4 livros\nif (associado.getLivrosEmprestados().size() == 4) {\n    biblioteca.emprestarLivro(livro, associado);\n}\n// Só empresta se tiver 4 livros, o que é o oposto do desejado!`,
+                    analogy: '🚦 Um semáforo que só abre para carros quando exatamente 4 carros estão esperando. Isso não faz sentido para o fluxo normal do trânsito.',
+                    justification: 'Esta implementação verifica se o associado tem exatamente 4 livros emprestados para então realizar o empréstimo. Isso é o oposto da regra de negócio (máximo 3 livros). O empréstimo só ocorreria em uma condição que deveria impedi-lo.'
+                },
+                C: {
+                    concept: 'Estrutura Condicional - Validação Completa',
+                    example: `// ✅ Verifica se tem mais de 3 e nega, senão empresta\nif (associado.getLivrosEmprestados().size() > 3) {\n    System.out.println("Limite de empréstimos excedido.");\n} else {\n    biblioteca.emprestarLivro(livro, associado);\n}`,
+                    analogy: '🚪 Uma porta que avisa "Sala cheia!" quando tem mais de 3 pessoas e só abre quando há espaço. O usuário sempre sabe o que está acontecendo.',
+                    justification: '✅ Esta implementação está correta. Primeiro verifica se o número de livros emprestados é maior que 3 (limite excedido). Se for, exibe a mensagem de erro. Caso contrário (size <= 3), realiza o empréstimo. É uma estrutura condicional completa e clara.'
+                },
+                D: {
+                    concept: 'Estrutura Condicional - Lógica Invertida',
+                    example: `// ❌ Primeiro adiciona, depois verifica o limite\nassociado.getLivrosEmprestados().add(livro);\nif (associado.getLivrosEmprestados().size() > 3) {\n    System.out.println("Empréstimo realizado com sucesso.");\n}\n// Permite empréstimo mesmo com mais de 3 livros!`,
+                    analogy: '🏊 Primeiro coloca a pessoa na piscina, depois verifica se ela sabe nadar. A verificação deveria vir antes da ação.',
+                    justification: 'Esta implementação primeiro adiciona o livro à lista de empréstimos e depois verifica se o limite foi excedido. Além disso, a mensagem de sucesso é exibida quando o limite é excedido, o que é totalmente incorreto. A validação deve sempre preceder a ação.'
+                }
+            }
+        }, {
+            id: 2,
+            text: `Após o sucesso da funcionalidade de reservas de livros, a biblioteca agora deseja implementar um sistema de gerenciamento de empréstimos, permitindo que bibliotecários registrem empréstimos de livros para associados e controlem as devoluções. Este novo módulo exigirá a aplicação de técnicas avançadas de programação orientada a objetos e o uso eficiente de estruturas de controle repetitivas para lidar com múltiplos empréstimos e devoluções.<br><br>Desenvolva um sistema que permita aos bibliotecários registrar empréstimos de livros, verificando a disponibilidade do livro e garantindo que o associado seja elegível para o empréstimo. O sistema também deve possibilitar o registro de devoluções de livros, atualizando os status do livro e do associado. Este desafio requer a implementação de laços de repetição para processar várias transações de empréstimo e devolução, com um nível de dificuldade de 45%.<br><br><strong>Na implementação de um sistema de gerenciamento de empréstimos de livros em uma biblioteca, qual das seguintes opções representa corretamente a lógica para registrar empréstimos e devoluções?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'for (Livro livro : livrosDisponiveis) { if (associado.isElegivelParaEmprestimo()) { emprestimo.registrar(livro, associado); } }' },
+                { letter: 'B', text: 'if (livro.isDisponivel() && associado.isElegivelParaEmprestimo()) { emprestimo.registrar(livro, associado); }' },
+                { letter: 'C', text: 'while (associado.temEmprestimosPendentes()) { emprestimo.registrarDevolucao(livro, associado); }' },
+                { letter: 'D', text: 'for (Livro livro : livrosDisponiveis) { if (associado.temEmprestimosPendentes()) { emprestimo.registrarDevolucao(livro, associado); } }' }
+            ],
+            correct: 'A',
+            explanations: {
+                A: {
+                    concept: 'Estrutura de Repetição (for-each) com Validação',
+                    example: `// ✅ Itera sobre livros disponíveis e verifica elegibilidade\nfor (Livro livro : livrosDisponiveis) {\n    if (associado.isElegivelParaEmprestimo()) {\n        emprestimo.registrar(livro, associado);\n    }\n}`,
+                    analogy: '📋 Um bibliotecário que percorre a estante de livros disponíveis e, para cada livro, verifica se o associado pode pegá-lo emprestado.',
+                    justification: '✅ Esta implementação está correta. Ela itera sobre todos os livros disponíveis (for-each) e, para cada livro, verifica se o associado é elegível para o empréstimo. Se for, registra o empréstimo. Esta é a abordagem adequada para processar múltiplos empréstimos.'
+                },
+                B: {
+                    concept: 'Estrutura Condicional Única (if)',
+                    example: `// ❌ Verifica um único livro, não processa múltiplos\nif (livro.isDisponivel() && associado.isElegivelParaEmprestimo()) {\n    emprestimo.registrar(livro, associado);\n}`,
+                    analogy: '📖 Um bibliotecário que verifica apenas um livro por vez, sem conseguir processar vários empréstimos de uma só vez.',
+                    justification: 'Esta implementação usa apenas um if para verificar um único livro. Não há estrutura de repetição para processar múltiplos livros, o que é necessário para registrar vários empréstimos simultaneamente.'
+                },
+                C: {
+                    concept: 'Estrutura de Repetição (while) - Uso Incorreto',
+                    example: `// ❌ Usa while para devoluções, mas sem critério claro\nwhile (associado.temEmprestimosPendentes()) {\n    emprestimo.registrarDevolucao(livro, associado);\n}\n// Pode entrar em loop infinito se não houver condição de saída`,
+                    analogy: '🔄 Um bibliotecário que fica devolvendo livros enquanto houver empréstimos pendentes, mas sem saber qual livro devolver. Pode entrar em um loop infinito.',
+                    justification: 'Esta implementação usa while para registrar devoluções, mas não especifica qual livro está sendo devolvido. Além disso, não há garantia de que o loop terminará, podendo causar um loop infinito se a condição nunca mudar.'
+                },
+                D: {
+                    concept: 'Estrutura de Repetição (for-each) - Lógica Incorreta',
+                    example: `// ❌ Itera sobre livros disponíveis, mas verifica empréstimos pendentes\nfor (Livro livro : livrosDisponiveis) {\n    if (associado.temEmprestimosPendentes()) {\n        emprestimo.registrarDevolucao(livro, associado);\n    }\n}`,
+                    analogy: '🔀 Um bibliotecário que percorre livros disponíveis, mas tenta registrar devoluções em vez de empréstimos. A ação não corresponde ao contexto.',
+                    justification: 'Esta implementação itera sobre livros disponíveis (para empréstimos), mas tenta registrar devoluções. Além disso, verifica se o associado tem empréstimos pendentes, mas não qual livro específico está sendo devolvido. Há uma confusão entre empréstimo e devolução.'
+                }
+            }
+        }, {
+            id: 3,
+            text: `Após o sucesso na implementação do sistema de gerenciamento de reservas de livros, surge a necessidade de expandir as funcionalidades do sistema de biblioteca para incluir o gerenciamento de empréstimos de livros. Este novo módulo deve permitir que os bibliotecários registrem empréstimos de livros aos associados e controlem a devolução dos mesmos. A implementação deste módulo exige o uso de técnicas de programação orientadas a objetos e estruturas de controle repetitivas, para lidar com múltiplos empréstimos e devoluções de forma eficiente.<br><br>Desenvolva um sistema que permita aos bibliotecários registrar empréstimos de livros, verificando a disponibilidade do livro e a elegibilidade do associado para o empréstimo. O sistema também deve permitir o registro de devoluções de livros, atualizando o status do livro e do associado. Este desafio requer a implementação de laços de repetição para processar várias transações de empréstimo e devolução, com um nível de dificuldade de 45%.<br><br><strong>Na implementação de um sistema de gerenciamento de empréstimos de livros em uma biblioteca, qual das seguintes opções representa corretamente a lógica para registrar empréstimos e devoluções?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'for (Livro livro : livrosDisponiveis) { if (associado.isElegivelParaEmprestimo()) { emprestimo.registrar(livro, associado); } }' },
+                { letter: 'B', text: 'if (livro.isDisponivel() && associado.isElegivelParaEmprestimo()) { emprestimo.registrar(livro, associado); }' },
+                { letter: 'C', text: 'while (associado.temEmprestimosPendentes()) { emprestimo.registrarDevolucao(livro, associado); }' },
+                { letter: 'D', text: 'if (emprestimo.isAtivo()) { emprestimo.registrarDevolucao(livro, associado); } else { System.out.println("Nenhum empréstimo ativo para devolução"); }' }
+            ],
+            correct: 'A',
+            explanations: {
+                A: {
+                    concept: 'Estrutura de Repetição (for-each) com Validação',
+                    example: `// ✅ Itera sobre livros disponíveis e verifica elegibilidade\nfor (Livro livro : livrosDisponiveis) {\n    if (associado.isElegivelParaEmprestimo()) {\n        emprestimo.registrar(livro, associado);\n    }\n}`,
+                    analogy: '📋 Um bibliotecário que percorre a estante de livros disponíveis e, para cada livro, verifica se o associado pode pegá-lo emprestado.',
+                    justification: '✅ Esta implementação está correta. Ela itera sobre todos os livros disponíveis (for-each) e, para cada livro, verifica se o associado é elegível para o empréstimo. Se for, registra o empréstimo. É a abordagem adequada para processar múltiplos empréstimos.'
+                },
+                B: {
+                    concept: 'Estrutura Condicional Única (if)',
+                    example: `// ❌ Verifica um único livro, não processa múltiplos\nif (livro.isDisponivel() && associado.isElegivelParaEmprestimo()) {\n    emprestimo.registrar(livro, associado);\n}`,
+                    analogy: '📖 Um bibliotecário que verifica apenas um livro por vez, sem conseguir processar vários empréstimos de uma só vez.',
+                    justification: 'Esta implementação usa apenas um if para verificar um único livro. Não há estrutura de repetição para processar múltiplos livros, o que é necessário para registrar vários empréstimos simultaneamente.'
+                },
+                C: {
+                    concept: 'Estrutura de Repetição (while) - Uso Incorreto',
+                    example: `// ❌ Usa while para devoluções, mas sem critério claro\nwhile (associado.temEmprestimosPendentes()) {\n    emprestimo.registrarDevolucao(livro, associado);\n}`,
+                    analogy: '🔄 Um bibliotecário que fica devolvendo livros enquanto houver empréstimos pendentes, mas sem saber qual livro devolver. Pode entrar em loop infinito.',
+                    justification: 'Esta implementação usa while para registrar devoluções, mas não especifica qual livro está sendo devolvido. Além disso, não há garantia de que o loop terminará, podendo causar um loop infinito.'
+                },
+                D: {
+                    concept: 'Estrutura Condicional - Devolução Simples',
+                    example: `// ❌ Verifica apenas se há empréstimo ativo\nif (emprestimo.isAtivo()) {\n    emprestimo.registrarDevolucao(livro, associado);\n} else {\n    System.out.println("Nenhum empréstimo ativo para devolução");\n}`,
+                    analogy: '📚 Um bibliotecário que tenta devolver um livro sem saber qual livro específico o associado está devolvendo.',
+                    justification: 'Esta implementação verifica apenas se há um empréstimo ativo, mas não itera sobre uma lista de livros ou empréstimos. Ela não processa múltiplas transações e não lida com a devolução de livros específicos.'
+                }
+            }
+        }, {
+            id: 4,
+            text: `Após a bem-sucedida implementação do sistema de gerenciamento de empréstimos de livros na biblioteca, surge a necessidade de aprimorar a experiência dos associados, oferecendo uma maneira mais eficiente de buscar livros específicos no catálogo. O objetivo agora é desenvolver um módulo de pesquisa avançada que permita aos associados pesquisar livros com base em diversos critérios, como título, autor, gênero e ano de publicação. Este módulo exigirá a codificação de programas orientados a objetos com ênfase na manipulação de estruturas de controle repetitivas para filtrar os resultados da pesquisa.<br><br>Desafio: Implemente um sistema de pesquisa avançada que permita aos associados buscar livros com base em critérios específicos, como título, autor, gênero e ano de publicação. O sistema deve fornecer resultados relevantes e permitir a seleção de múltiplos critérios de pesquisa. Este desafio, com um nível de dificuldade de 50%, requer a aplicação eficiente de estruturas de controle repetitivas para filtrar os resultados da pesquisa com base nos critérios selecionados pelos associados.<br><br><strong>Na implementação de um sistema de pesquisa avançada de livros em uma biblioteca, qual das seguintes opções representa corretamente a lógica para filtrar os resultados da pesquisa com base em critérios múltiplos?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'for (Livro livro : catalogo) { if (livro.atendeCriterios(criteriosSelecionados)) { resultado.add(livro); } }' },
+                { letter: 'B', text: 'if (criteriosSelecionados.isEmpty()) { System.out.println("Selecione pelo menos um critério"); } else { for (Livro livro : catalogo) { if (livro.atendeCriterios(criteriosSelecionados)) { resultado.add(livro); } } }' },
+                { letter: 'C', text: 'if (!criteriosSelecionados.isEmpty()) { for (Livro livro : catalogo) { if (livro.atendeCriterios(criteriosSelecionados)) { resultado.add(livro); } } } else { System.out.println("Selecione pelo menos um critério"); }' },
+                { letter: 'D', text: 'if (criteriosSelecionados.isEmpty()) { for (Livro livro : catalogo) { resultado.add(livro); } } else { for (Livro livro : catalogo) { if (livro.atendeCriterios(criteriosSelecionados)) { resultado.add(livro); } } }' }
+            ],
+            correct: 'B',
+            explanations: {
+                A: {
+                    concept: 'Filtragem sem Validação Prévia',
+                    example: `// ❌ Filtra diretamente sem verificar se há critérios\nfor (Livro livro : catalogo) {\n    if (livro.atendeCriterios(criteriosSelecionados)) {\n        resultado.add(livro);\n    }\n}\n// Se não houver critérios, retorna lista vazia sem aviso`,
+                    analogy: '🔍 Uma busca que começa a pesquisar sem saber o que o usuário quer. Se o usuário não selecionou nada, simplesmente mostra um resultado vazio, sem explicar o motivo.',
+                    justification: 'Esta implementação filtra os livros diretamente com base nos critérios, mas não verifica se o usuário selecionou pelo menos um critério. Se critériosSelecionados estiver vazio, a pesquisa retornará uma lista vazia sem nenhum aviso ao usuário.'
+                },
+                B: {
+                    concept: 'Validação Prévia + Filtragem',
+                    example: `// ✅ Verifica se há critérios antes de filtrar\nif (criteriosSelecionados.isEmpty()) {\n    System.out.println("Selecione pelo menos um critério");\n} else {\n    for (Livro livro : catalogo) {\n        if (livro.atendeCriterios(criteriosSelecionados)) {\n            resultado.add(livro);\n        }\n    }\n}`,
+                    analogy: '🔎 Uma busca que primeiro pergunta "O que você quer pesquisar?" e só depois realiza a pesquisa. O usuário sempre sabe o que está acontecendo.',
+                    justification: '✅ Esta implementação está correta. Primeiro verifica se o usuário selecionou pelo menos um critério. Se não, exibe uma mensagem orientativa. Se sim, itera sobre o catálogo e adiciona os livros que atendem aos critérios à lista de resultados. É a abordagem mais completa e amigável.'
+                },
+                C: {
+                    concept: 'Filtragem com Validação (Ordem Invertida)',
+                    example: `// ❌ A validação existe, mas a ordem pode confundir\nif (!criteriosSelecionados.isEmpty()) {\n    for (Livro livro : catalogo) {\n        if (livro.atendeCriterios(criteriosSelecionados)) {\n            resultado.add(livro);\n        }\n    }\n} else {\n    System.out.println("Selecione pelo menos um critério");\n}`,
+                    analogy: '🔎 Uma busca que começa pesquisando e depois pergunta o que o usuário queria. Funciona, mas a ordem é menos intuitiva.',
+                    justification: 'Esta implementação também verifica se há critérios antes de filtrar, mas usa uma negação (!criteriosSelecionados.isEmpty()) que é menos legível. Embora funcional, a alternativa B é mais clara e didática por usar isEmpty() diretamente.'
+                },
+                D: {
+                    concept: 'Filtragem com Fallback Incorreto',
+                    example: `// ❌ Se não há critérios, retorna TODOS os livros\nif (criteriosSelecionados.isEmpty()) {\n    for (Livro livro : catalogo) {\n        resultado.add(livro); // Retorna tudo!\n    }\n} else {\n    for (Livro livro : catalogo) {\n        if (livro.atendeCriterios(criteriosSelecionados)) {\n            resultado.add(livro);\n        }\n    }\n}`,
+                    analogy: '📚 Uma busca que, se o usuário não selecionar nada, simplesmente mostra todos os livros da biblioteca. Pode ser confuso e sobrecarregar o usuário com informações demais.',
+                    justification: 'Esta implementação, quando não há critérios selecionados, adiciona todos os livros do catálogo ao resultado. Isso não é uma pesquisa avançada, mas uma listagem completa. Não é o comportamento esperado para uma pesquisa com critérios específicos.'
+                }
+            }
+        }, {
+            id: 5,
+            text: `Após enfrentar desafios com a implementação de estruturas de controle condicionais no sistema de gerenciamento de reservas de livros, você decide focar no aprimoramento das habilidades básicas em programação. O novo objetivo é desenvolver um sistema de registro de feedback dos usuários sobre os livros da biblioteca. Este sistema deve permitir que os usuários avaliem os livros e deixem comentários, usando estruturas de controle condicionais para validar as entradas dos usuários, como verificar se a avaliação está dentro de um intervalo aceitável e se os comentários não excedem um limite de caracteres.<br><br>Implemente um sistema em uma linguagem de programação orientada a objetos que permita aos usuários avaliar os livros com uma nota de 1 a 5 e deixar um comentário de no máximo 200 caracteres. O sistema deve verificar se a nota está dentro do intervalo válido e se o tamanho do comentário não excede o limite estabelecido. Este desafio, com um nível de dificuldade de 30%, exige a aplicação eficiente de estruturas de controle condicionais para garantir a integridade dos dados de feedback.<br><br><strong>Na implementação de um sistema de registro de feedback dos usuários em uma biblioteca, qual das seguintes opções representa corretamente a lógica para validar a avaliação e o comentário?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'if (nota >= 1 && nota <= 5 && comentario.length() <= 200) { feedback.registrar(nota, comentario); }' },
+                { letter: 'B', text: 'if (nota < 1 || nota > 5) { System.out.println("Nota inválida"); } if (comentario.length() > 200) { System.out.println("Comentário muito longo"); }' },
+                { letter: 'C', text: 'if (nota >= 1 && nota <= 5) { if (comentario.length() <= 200) { feedback.registrar(nota, comentario); } }' },
+                { letter: 'D', text: 'if (comentario.length() <= 200) { if (nota >= 1 && nota <= 5) { feedback.registrar(nota, comentario); } else { System.out.println("Nota inválida"); } }' }
+            ],
+            correct: 'A',
+            explanations: {
+                A: {
+                    concept: 'Validação Combinada (AND)',
+                    example: `// ✅ Valida tudo de uma vez com operador AND\nif (nota >= 1 && nota <= 5 && comentario.length() <= 200) {\n    feedback.registrar(nota, comentario);\n}`,
+                    analogy: '✅ Um segurança que verifica "Documento, ingresso e idade" tudo de uma vez na porta. Só entra quem tem tudo certo.',
+                    justification: '✅ Esta implementação é a mais eficiente e elegante. Ela verifica todas as condições simultaneamente usando o operador AND (&&). Se todas as condições forem verdadeiras (nota entre 1 e 5 E comentário com até 200 caracteres), o feedback é registrado. É uma abordagem concisa e de fácil leitura.'
+                },
+                B: {
+                    concept: 'Validação Separada (Sem Bloqueio)',
+                    example: `// ❌ Valida separadamente, mas não bloqueia o registro\nif (nota < 1 || nota > 5) {\n    System.out.println("Nota inválida");\n}\nif (comentario.length() > 200) {\n    System.out.println("Comentário muito longo");\n}\n// O feedback pode ser registrado mesmo com dados inválidos!`,
+                    analogy: '⚠️ Um segurança que avisa "Você está sem documento" e "Você está sem ingresso", mas deixa você entrar mesmo assim.',
+                    justification: 'Esta implementação valida nota e comentário separadamente e exibe mensagens de erro, mas não impede o registro do feedback se alguma condição for inválida. Ela apenas informa os problemas, mas permite que dados inválidos sejam registrados.'
+                },
+                C: {
+                    concept: 'Validação Aninhada (Nested if)',
+                    example: `// ❌ Valida nota primeiro, depois comentário\nif (nota >= 1 && nota <= 5) {\n    if (comentario.length() <= 200) {\n        feedback.registrar(nota, comentario);\n    }\n}\n// Se a nota for inválida, o comentário não é verificado`,
+                    analogy: '⚠️ Um segurança que verifica o documento primeiro e só depois verifica o ingresso. Se o documento for inválido, nem checa o ingresso, mas não avisa qual foi o problema.',
+                    justification: 'Esta implementação valida a nota primeiro e, se for válida, valida o comentário. Se a nota for inválida, o comentário não é verificado e nenhuma mensagem de erro é exibida. O usuário não sabe o que aconteceu.'
+                },
+                D: {
+                    concept: 'Validação com Aninhamento e Mensagem Parcial',
+                    example: `// ❌ Valida comentário primeiro, nota depois\nif (comentario.length() <= 200) {\n    if (nota >= 1 && nota <= 5) {\n        feedback.registrar(nota, comentario);\n    } else {\n        System.out.println("Nota inválida");\n    }\n}\n// Se o comentário for inválido, não avisa o usuário`,
+                    analogy: '⚠️ Um segurança que verifica o ingresso primeiro e depois o documento. Se o ingresso for inválido, nem checa o documento e não avisa o motivo.',
+                    justification: 'Esta implementação valida o comentário primeiro. Se o comentário for válido, valida a nota. Se o comentário for inválido (mais de 200 caracteres), não exibe nenhuma mensagem e o feedback não é registrado, deixando o usuário sem saber o motivo.'
+                }
+            }
+        }, {
+            id: 6,
+            text: `Após identificar a necessidade de melhorias no sistema de gerenciamento de biblioteca, especialmente na interface de usuário, você decide focar na melhoria da experiência do usuário durante a navegação no sistema. Um dos principais desafios é aperfeiçoar o módulo de exibição de informações dos livros, tornando-o mais interativo e responsivo. Este módulo deve permitir que os usuários expandam e colapsem detalhes sobre os livros, como sinopses, avaliações e disponibilidade, usando técnicas de programação que envolvem estruturas de controle repetitivas.<br><br>Desenvolva um componente da interface de usuário em uma linguagem de programação orientada a objetos que permita aos usuários visualizar uma lista de livros e expandir informações detalhadas de cada livro individualmente. Este componente deve ser eficiente e intuitivo, permitindo aos usuários alternar entre a visualização resumida e detalhada dos livros. A implementação deve refletir um entendimento prático de estruturas de controle repetitivas para iterar sobre os dados dos livros, considerando um nível de dificuldade de 55%.<br><br><strong>Na implementação de um sistema de exibição interativa de informações dos livros, qual das seguintes opções descreve melhor a abordagem para alternar entre visualizações resumida e detalhada de cada livro?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Para cada livro na lista, use um botão que, ao ser clicado, executa uma função que alterna a visibilidade das informações detalhadas do livro específico.' },
+                { letter: 'B', text: 'Implemente um menu suspenso para cada livro que, quando selecionado, exibe todas as informações detalhadas de todos os livros na lista.' },
+                { letter: 'C', text: 'Crie um botão único que, quando clicado, alterna a exibição de detalhes para todos os livros da lista simultaneamente.' },
+                { letter: 'D', text: 'Utilize um sistema de abas onde cada aba corresponde a um livro, e ao clicar em uma aba, as informações detalhadas do livro são exibidas.' }
+            ],
+            correct: 'A',
+            explanations: {
+                A: {
+                    concept: 'Controle Individual por Livro (Botão Toggle)',
+                    example: `// ✅ Para cada livro, um botão que controla seus detalhes\nfor (Livro livro : listaDeLivros) {\n    // Cria um botão para este livro específico\n    botao.onClick(() -> {\n        livro.alternarDetalhes(); // Alterna APENAS este livro\n    });\n}`,
+                    analogy: '📱 Um aplicativo de lista de contatos onde cada contato tem um botão "Expandir" que mostra os detalhes apenas daquele contato específico.',
+                    justification: '✅ Esta é a abordagem correta. Cada livro na lista possui seu próprio botão que controla a exibição de detalhes apenas daquele livro específico. Isso permite que o usuário expanda ou colapse livros individualmente, conforme sua necessidade, mantendo a interface limpa e organizada.'
+                },
+                B: {
+                    concept: 'Menu Suspenso Global (Controle Inadequado)',
+                    example: `// ❌ Um menu que afeta todos os livros\nmenuSuspenso.onChange(() -> {\n    for (Livro livro : listaDeLivros) {\n        livro.exibirDetalhes(); // Mostra detalhes de TODOS\n    }\n});`,
+                    analogy: '📚 Um botão que, ao ser acionado, abre todos os livros da estante ao mesmo tempo. Em vez de ajudar, confunde o usuário com informações demais.',
+                    justification: 'Um menu suspenso para cada livro que exibe detalhes de todos os livros não é uma abordagem eficiente. O usuário quer ver detalhes de um livro específico, não de todos ao mesmo tempo.'
+                },
+                C: {
+                    concept: 'Botão Único Global (Sem Controle Individual)',
+                    example: `// ❌ Um botão que afeta todos os livros\nbotaoGlobal.onClick(() -> {\n    for (Livro livro : listaDeLivros) {\n        livro.alternarDetalhes(); // Alterna TODOS os livros\n    }\n});`,
+                    analogy: '🔘 Um interruptor único que acende ou apaga todas as luzes da casa. O usuário não pode controlar cada cômodo individualmente.',
+                    justification: 'Um botão único que alterna a exibição de detalhes para todos os livros simultaneamente não oferece controle individual. O usuário perde a flexibilidade de ver detalhes apenas dos livros que lhe interessam.'
+                },
+                D: {
+                    concept: 'Sistema de Abas (Navegação por Abas)',
+                    example: `// ❌ Abas para cada livro, mas perde a visão geral\nabas.onTabChange((tab) -> {\n    Livro livro = tab.getLivro();\n    livro.exibirDetalhes(); // Mostra apenas o livro da aba\n});`,
+                    analogy: '📑 Um sistema de abas onde cada aba é um livro. O usuário vê apenas um livro por vez, perdendo a visão geral da lista.',
+                    justification: 'Embora um sistema de abas funcione, ele não é a melhor abordagem para uma lista de livros. As abas ocupam espaço na interface e limitam a visualização a um livro por vez, enquanto a alternativa A permite ver todos os livros com a opção de expandir detalhes individualmente.'
+                }
+            }
+        }, {
+            id: 7,
+            text: `Após enfrentar desafios na implementação do sistema de gerenciamento de empréstimos de livros na biblioteca, surge a necessidade de aprimorar o módulo de registro de empréstimos. O objetivo é permitir que os bibliotecários registrem empréstimos de forma eficiente e que os associados possam acompanhar o status de seus empréstimos de livros. Este módulo deve ser implementado com foco na utilização de ambientes de desenvolvimento para programação desktop e na manipulação de estruturas de controle repetitivas, para gerenciar múltiplos empréstimos e devoluções.<br><br>Desenvolva um programa de desktop que permita aos bibliotecários registrar empréstimos de livros e aos associados acompanhar o status de seus empréstimos ativos. O programa deve fornecer uma interface intuitiva que permita o registro de múltiplos empréstimos e a busca de empréstimos por associado. Este desafio, com um nível de dificuldade de 40%, requer a aplicação eficiente de estruturas de controle repetitivas para gerenciar empréstimos e devoluções de livros.<br><br><strong>Na implementação de um programa de desktop para o registro de empréstimos de livros em uma biblioteca, qual das seguintes opções representa corretamente a lógica para registrar múltiplos empréstimos de forma eficiente?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'while (emprestimoAtivo) { registrarEmprestimo(); }' },
+                { letter: 'B', text: 'do { registrarEmprestimo(); } while (emprestimoAtivo);' },
+                { letter: 'C', text: 'for (Emprestimo emprestimo : emprestimosPendentes) { registrarEmprestimo(emprestimo); }' },
+                { letter: 'D', text: 'if (emprestimoAtivo) { registrarEmprestimo(); }' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'Estrutura while - Risco de Loop Infinito',
+                    example: `// ❌ while com condição que pode nunca mudar\nwhile (emprestimoAtivo) {\n    registrarEmprestimo();\n}\n// Se emprestimoAtivo nunca for false, loop infinito!`,
+                    analogy: '🔄 Um bibliotecário que fica registrando empréstimos enquanto "houver empréstimo ativo", mas sem nunca atualizar essa condição. Pode ficar preso em um loop eterno.',
+                    justification: 'O uso de while com uma condição booleana (emprestimoAtivo) pode causar um loop infinito se a condição nunca se tornar false. Além disso, não há iteração sobre uma lista específica de empréstimos pendentes.'
+                },
+                B: {
+                    concept: 'Estrutura do-while - Execução Garantida',
+                    example: `// ❌ do-while executa pelo menos uma vez\ndo {\n    registrarEmprestimo();\n} while (emprestimoAtivo);\n// Executa mesmo se não houver empréstimos pendentes`,
+                    analogy: '🔄 Um bibliotecário que registra um empréstimo antes mesmo de verificar se há empréstimos a registrar. Pode registrar empréstimos desnecessários.',
+                    justification: 'O do-while executa o bloco pelo menos uma vez antes de verificar a condição. Isso pode resultar em um empréstimo sendo registrado mesmo quando não há empréstimos pendentes.'
+                },
+                C: {
+                    concept: 'Estrutura for-each - Iteração Segura',
+                    example: `// ✅ Itera sobre todos os empréstimos pendentes\nfor (Emprestimo emprestimo : emprestimosPendentes) {\n    registrarEmprestimo(emprestimo);\n}\n// Processa cada empréstimo pendente individualmente`,
+                    analogy: '📋 Um bibliotecário que pega a lista de empréstimos pendentes e processa um por um, de forma organizada e segura.',
+                    justification: '✅ Esta é a abordagem correta. O for-each itera sobre todos os empréstimos pendentes e registra cada um individualmente. É seguro porque percorre uma lista finita e conhecida, sem risco de loop infinito.'
+                },
+                D: {
+                    concept: 'Estrutura if - Processamento Único',
+                    example: `// ❌ Verifica apenas uma vez\nif (emprestimoAtivo) {\n    registrarEmprestimo();\n}\n// Processa apenas um empréstimo, não múltiplos`,
+                    analogy: '📖 Um bibliotecário que registra um único empréstimo e para. Não consegue processar vários empréstimos pendentes de uma só vez.',
+                    justification: 'O if processa apenas um empréstimo (se a condição for verdadeira). Não há estrutura de repetição para processar múltiplos empréstimos pendentes.'
+                }
+            }
+        }, {
+            id: 8,
+            text: `Após a bem-sucedida implementação do sistema de registro de feedback dos usuários sobre os livros da biblioteca, surge a necessidade de aprimorar ainda mais a experiência dos usuários. Agora, o objetivo é desenvolver um sistema de recomendação de livros com base nas avaliações e comentários dos usuários. Este sistema deve aplicar técnicas de orientação a objetos para analisar os dados de feedback e gerar recomendações personalizadas com base nas preferências dos usuários.<br><br>Desafio: Implemente um sistema de recomendação de livros que utilize as avaliações e comentários dos usuários para sugerir livros similares aos seus interesses. O sistema deve ser capaz de identificar usuários com gostos semelhantes com base em seus feedbacks e recomendar livros bem avaliados por usuários similares. Este desafio, com um nível de dificuldade de 35%, requer a aplicação de técnicas de orientação a objetos para a análise de dados e a geração de recomendações.<br><br><strong>Na implementação de um sistema de recomendação de livros com base nas avaliações e comentários dos usuários, qual das seguintes opções representa corretamente a lógica para identificar usuários com gostos semelhantes e sugerir livros bem avaliados por eles?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'for (Usuario usuario : usuarios) { if (usuario.temAvaliacoesSimilares(usuarioAlvo)) { recomendarLivros(usuario); } }' },
+                { letter: 'B', text: 'for (Avaliacao avaliacao : avaliacoesUsuarioAlvo) { if (avaliacao.getNota() >= 4) { recomendarLivros(avaliacao.getLivro()); } }' },
+                { letter: 'C', text: 'if (usuarioAlvo.temAvaliacoes()) { for (Usuario usuario : usuarios) { if (usuario.temAvaliacoesSimilares(usuarioAlvo)) { recomendarLivros(usuario); } } }' },
+                { letter: 'D', text: 'if (usuarioAlvo.temAvaliacoes()) { for (Usuario usuario : usuarios) { if (usuario.temAvaliacoesSimilares(usuarioAlvo) && usuario.getMediaAvaliacoes() >= 4) { recomendarLivros(usuario); } } }' }
+            ],
+            correct: 'D',
+            explanations: {
+                A: {
+                    concept: 'Recomendação sem Validação Prévia',
+                    example: `// ❌ Recomenda sem verificar se o usuário tem avaliações\nfor (Usuario usuario : usuarios) {\n    if (usuario.temAvaliacoesSimilares(usuarioAlvo)) {\n        recomendarLivros(usuario);\n    }\n}\n// Pode recomendar livros de usuários que não têm boas avaliações`,
+                    analogy: '📚 Um sistema que recomenda livros baseado em usuários similares, mas sem verificar se o usuário alvo tem avaliações ou se os usuários similares têm boas avaliações.',
+                    justification: 'Esta implementação recomenda livros de usuários similares sem verificar se o usuário alvo tem avaliações ou se os usuários similares têm boas avaliações. Pode recomendar livros de usuários que não são referência confiável.'
+                },
+                B: {
+                    concept: 'Recomendação Baseada Apenas em Notas',
+                    example: `// ❌ Recomenda apenas livros com nota >= 4\nfor (Avaliacao avaliacao : avaliacoesUsuarioAlvo) {\n    if (avaliacao.getNota() >= 4) {\n        recomendarLivros(avaliacao.getLivro());\n    }\n}\n// Não considera usuários similares, apenas as próprias avaliações`,
+                    analogy: '⭐ Um sistema que recomenda livros apenas com base nas notas do próprio usuário, sem considerar o que outros usuários com gostos similares gostaram.',
+                    justification: 'Esta implementação recomenda apenas livros que o próprio usuário avaliou com nota alta (>= 4). Não considera usuários similares para gerar recomendações personalizadas, o que é o objetivo do sistema.'
+                },
+                C: {
+                    concept: 'Recomendação com Validação Parcial',
+                    example: `// ❌ Valida se o usuário tem avaliações, mas não a qualidade\nif (usuarioAlvo.temAvaliacoes()) {\n    for (Usuario usuario : usuarios) {\n        if (usuario.temAvaliacoesSimilares(usuarioAlvo)) {\n            recomendarLivros(usuario);\n        }\n    }\n}\n// Não verifica se os usuários similares têm boas avaliações`,
+                    analogy: '📚 Um sistema que verifica se o usuário tem avaliações e encontra usuários similares, mas não filtra por qualidade das avaliações.',
+                    justification: 'Esta implementação verifica se o usuário alvo tem avaliações e encontra usuários com gostos similares. No entanto, não verifica se esses usuários similares têm boas avaliações (média >= 4), o que poderia recomendar livros mal avaliados.'
+                },
+                D: {
+                    concept: 'Recomendação Completa com Múltiplos Filtros',
+                    example: `// ✅ Valida avaliações E qualidade dos usuários similares\nif (usuarioAlvo.temAvaliacoes()) {\n    for (Usuario usuario : usuarios) {\n        if (usuario.temAvaliacoesSimilares(usuarioAlvo) \n            && usuario.getMediaAvaliacoes() >= 4) {\n            recomendarLivros(usuario);\n        }\n    }\n}`,
+                    analogy: '🎯 Um sistema de recomendação inteligente que: 1) verifica se o usuário tem avaliações; 2) encontra usuários com gostos similares; 3) filtra apenas aqueles com boas avaliações (média >= 4). O resultado é uma recomendação de alta qualidade.',
+                    justification: '✅ Esta implementação está correta. Ela primeiro verifica se o usuário alvo tem avaliações. Depois itera sobre todos os usuários e verifica duas condições: se o usuário tem avaliações similares ao usuário alvo E se a média das avaliações desse usuário é >= 4. Apenas então recomenda os livros. Isso garante recomendações de qualidade baseadas em usuários confiáveis.'
+                }
+            }
+        }, {
+            id: 9,
+            text: `Após superar desafios na implementação do sistema de registro de feedback dos usuários sobre os livros da biblioteca, decidi concentrar-me nas habilidades fundamentais de programação, especialmente no desenvolvimento de interfaces de usuário para aplicativos desktop. O novo objetivo é criar um aplicativo de gerenciamento de tarefas simples que permita aos usuários adicionarem, editar, excluir e concluir tarefas. Este aplicativo deve incluir estruturas de controle condicionais para gerenciar o fluxo das operações e atualizar a interface do usuário em tempo real.<br><br>Desenvolva um aplicativo de gerenciamento de tarefas em uma linguagem de programação orientada a objetos. O aplicativo deve permitir aos usuários adicionarem, editar, excluir e concluir tarefas, proporcionando uma interface intuitiva e atualizando as tarefas em tempo real conforme são modificadas. Este desafio, com um nível de dificuldade de 20%, requer a aplicação eficiente de estruturas de controle condicionais para gerenciar o fluxo das operações.<br><br><strong>Na implementação do aplicativo, qual das seguintes opções representa corretamente a lógica para exibir o formulário de adição de uma nova tarefa quando o usuário clica em "Adicionar"?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'if (botaoAdicionarClicado) { criarTarefa(); }' },
+                { letter: 'B', text: 'if (botaoAdicionarClicado) { exibirFormularioAdicaoTarefa(); }' },
+                { letter: 'C', text: 'if (tarefaNaoExiste()) { adicionarTarefa(); }' },
+                { letter: 'D', text: 'if (formularioPreenchidoCorretamente()) { salvarTarefa(); }' }
+            ],
+            correct: 'B',
+            explanations: {
+                A: {
+                    concept: 'Ação Direta (Criar Tarefa)',
+                    example: `// ❌ Cria a tarefa diretamente, sem mostrar formulário\nif (botaoAdicionarClicado) {\n    criarTarefa();\n}\n// O usuário não pode preencher os dados da tarefa!`,
+                    analogy: '📝 Clicar em "Adicionar Tarefa" e a tarefa ser criada automaticamente, sem perguntar o título, descrição ou data. O usuário não tem controle sobre o que está sendo adicionado.',
+                    justification: 'Esta implementação cria a tarefa diretamente quando o botão "Adicionar" é clicado, sem exibir um formulário para o usuário preencher os dados. O usuário não tem como informar o título, descrição ou outros atributos da tarefa.'
+                },
+                B: {
+                    concept: 'Exibição de Formulário (UI Flow)',
+                    example: `// ✅ Exibe o formulário para o usuário preencher\nif (botaoAdicionarClicado) {\n    exibirFormularioAdicaoTarefa();\n}\n// O usuário preenche os dados e depois salva`,
+                    analogy: '📝 Clicar em "Adicionar Tarefa" abre um formulário onde o usuário pode digitar o título, descrição, data, etc. O usuário tem controle total sobre o que está sendo adicionado.',
+                    justification: '✅ Esta implementação está correta. Quando o botão "Adicionar" é clicado, o sistema exibe um formulário para que o usuário preencha os dados da nova tarefa (título, descrição, data, prioridade, etc.). Essa é a abordagem padrão em interfaces de usuário.'
+                },
+                C: {
+                    concept: 'Condição de Existência (Verificação Incorreta)',
+                    example: `// ❌ Verifica se a tarefa NÃO existe para adicionar\nif (tarefaNaoExiste()) {\n    adicionarTarefa();\n}\n// A condição não está relacionada ao clique do botão`,
+                    analogy: '❓ Uma condição confusa que não está relacionada ao evento de clique do botão. O sistema verifica se a tarefa existe, mas não sabe se o usuário quer adicionar uma nova.',
+                    justification: 'Esta implementação verifica se a tarefa não existe para adicioná-la, mas não está vinculada ao clique do botão "Adicionar". A condição não reflete a intenção do usuário.'
+                },
+                D: {
+                    concept: 'Validação de Formulário (Salvar Tarefa)',
+                    example: `// ❌ Salva a tarefa após validação, mas não exibe o formulário\nif (formularioPreenchidoCorretamente()) {\n    salvarTarefa();\n}\n// O formulário precisa já estar preenchido, mas como ele foi exibido?`,
+                    analogy: '📝 Salvar uma tarefa que já está preenchida, mas sem ter mostrado o formulário para o usuário preencher. O sistema salva algo que não foi definido pelo usuário.',
+                    justification: 'Esta implementação salva a tarefa se o formulário estiver preenchido corretamente, mas não exibe o formulário para o usuário preencher. Ela lida com a etapa de salvamento, não com a exibição do formulário.'
+                }
+            }
+        }];
+
+        // ============================================================
+        // LÓGICA DO QUIZ
+        // ============================================================
+
+        let currentQuestion = 0;
+        let answers = {};
+        const totalQuestions = questionsData.length;
+
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            questionsData.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = `question-card ${index === currentQuestion ? 'active' : ''}`;
+                card.id = `question-${index}`;
+
+                let html = `
+                    <div class="question-number">Questão ${index + 1} de ${totalQuestions}</div>
+                    <div class="question-text">${q.text}</div>
+                    <div class="alternatives">
+                `;
+
+                q.alternatives.forEach((alt, altIndex) => {
+                    const isCorrect = alt.letter === q.correct;
+                    const isAnswered = answers[index] !== undefined;
+                    const isSelected = answers[index] === alt.letter;
+                    let extraClass = '';
+                    let statusIcon = '';
+                    let disabledClass = '';
+
+                    if (isAnswered) {
+                        disabledClass = 'disabled';
+                        if (isSelected && isCorrect) {
+                            extraClass = 'correct';
+                            statusIcon = '✅';
+                        } else if (isSelected && !isCorrect) {
+                            extraClass = 'wrong';
+                            statusIcon = '❌';
+                        } else if (!isSelected && isCorrect) {
+                            extraClass = 'revealed-correct';
+                            statusIcon = '✅ (correta)';
+                        }
+                    }
+
+                    html += `
+                        <div class="alternative ${extraClass} ${disabledClass}" onclick="selectAlternative(${index}, '${alt.letter}')" id="alt-${index}-${altIndex}">
+                            <span class="letter">${alt.letter}.</span>
+                            <span class="text">${alt.text}</span>
+                            <span class="status-icon">${statusIcon}</span>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+
+                // Explicação de TODAS as alternativas (se respondida)
+                if (answers[index] !== undefined) {
+                    const selectedLetter = answers[index];
+                    const isSelectedCorrect = selectedLetter === q.correct;
+
+                    // Ordena as alternativas para exibição: primeiro a selecionada, depois as demais
+                    const sortedAlts = [...q.alternatives];
+                    sortedAlts.sort((a, b) => {
+                        if (a.letter === selectedLetter) return -1;
+                        if (b.letter === selectedLetter) return 1;
+                        return a.letter.localeCompare(b.letter);
+                    });
+
+                    sortedAlts.forEach((alt) => {
+                        const exp = q.explanations[alt.letter];
+                        if (!exp) return;
+
+                        const isCorrect = alt.letter === q.correct;
+                        const isSelected = alt.letter === selectedLetter;
+                        const isUserCorrect = isSelected && isCorrect;
+
+                        let headerText = '';
+                        let tagClass = '';
+
+                        if (isSelected && isCorrect) {
+                            headerText = '✅ Você acertou!';
+                            tagClass = 'tag-correct';
+                        } else if (isSelected && !isCorrect) {
+                            headerText = '❌ Você errou!';
+                            tagClass = 'tag-wrong';
+                        } else if (!isSelected && isCorrect) {
+                            headerText = '💡 Alternativa correta';
+                            tagClass = 'tag-correct';
+                        } else {
+                            headerText = '📘 Alternativa incorreta';
+                            tagClass = 'tag-wrong';
+                        }
+
+                        html += `
+                            <div class="explanation-block visible" id="exp-${index}-${alt.letter}">
+                                <div class="exp-header">
+                                    <span class="tag ${tagClass}">${alt.letter}</span>
+                                    ${headerText} – <span class="tag tag-concept">${exp.concept}</span>
+                                </div>
+                                ${exp.analogy ? `<div class="analogy">💡 ${exp.analogy}</div>` : ''}
+                                ${exp.example ? `<div class="example">${exp.example}</div>` : ''}
+                                <div class="justification"><strong>Justificativa:</strong> ${exp.justification}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Navegação inferior
+                const isFirst = index === 0;
+                const isLast = index === totalQuestions - 1;
+                const statusText = answers[index] !== undefined ? '✅ Respondida' : '⏳ Pendente';
+
+                html += `
+                    <div class="bottom-nav">
+                        <button class="btn-secondary" onclick="goToQuestion(${index - 1})" ${isFirst ? 'disabled' : ''}>◀ Anterior</button>
+                        <span class="info">${index + 1} de ${totalQuestions} • ${statusText}</span>
+                        <button class="btn-primary" onclick="goToQuestion(${index + 1})" ${isLast ? 'disabled' : ''}>Próxima ▶</button>
+                    </div>
+                `;
+
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+
+            updateProgress();
+            updateNavButtons();
+        }
+
+        function selectAlternative(qIndex, letter) {
+            if (answers[qIndex] !== undefined) return;
+            answers[qIndex] = letter;
+            renderQuestions();
+
+            if (Object.keys(answers).length === totalQuestions) {
+                setTimeout(showSummary, 600);
+            }
+        }
+
+        function goToQuestion(index) {
+            if (index < 0 || index >= totalQuestions) return;
+            currentQuestion = index;
+
+            document.querySelectorAll('.question-card').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+
+            updateProgress();
+            updateNavButtons();
+
+            const target = document.getElementById(`question-${index}`);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function updateProgress() {
+            const answered = Object.keys(answers).length;
+            const pct = (answered / totalQuestions) * 100;
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('currentLabel').textContent =
+                `Questão ${currentQuestion + 1} de ${totalQuestions} • ${answered}/${totalQuestions} respondidas`;
+        }
+
+        function updateNavButtons() {
+            const container = document.getElementById('navButtons');
+            container.innerHTML = '';
+
+            for (let i = 0; i < totalQuestions; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i + 1;
+                btn.className = i === currentQuestion ? 'active' : '';
+
+                if (answers[i] !== undefined) {
+                    const isCorrect = answers[i] === questionsData[i].correct;
+                    btn.classList.add(isCorrect ? 'answered-correct' : 'answered-wrong');
+                }
+
+                btn.onclick = () => goToQuestion(i);
+                container.appendChild(btn);
+            }
+        }
+
+        function showSummary() {
+            document.getElementById('questionsContainer').style.display = 'none';
+            document.getElementById('summary').classList.add('visible');
+
+            let correct = 0;
+            let wrong = 0;
+            let unanswered = 0;
+
+            questionsData.forEach((q, i) => {
+                if (answers[i] === undefined) {
+                    unanswered++;
+                } else if (answers[i] === q.correct) {
+                    correct++;
+                } else {
+                    wrong++;
+                }
+            });
+
+            const pct = Math.round((correct / totalQuestions) * 100);
+            document.getElementById('scoreCircle').textContent = pct + '%';
+            document.getElementById('scoreText').textContent = `Você acertou ${correct} de ${totalQuestions} questões`;
+            document.getElementById('correctCount').textContent = correct;
+            document.getElementById('wrongCount').textContent = wrong;
+            document.getElementById('unansweredCount').textContent = unanswered;
+
+            const circle = document.getElementById('scoreCircle');
+            if (pct >= 70) {
+                circle.style.borderColor = '#2e7d32';
+                circle.style.color = '#2e7d32';
+            } else if (pct >= 40) {
+                circle.style.borderColor = '#e65100';
+                circle.style.color = '#e65100';
+            } else {
+                circle.style.borderColor = '#c62828';
+                circle.style.color = '#c62828';
+            }
+        }
+
+        function restartQuiz() {
+            answers = {};
+            currentQuestion = 0;
+            document.getElementById('questionsContainer').style.display = 'block';
+            document.getElementById('summary').classList.remove('visible');
+            renderQuestions();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // INICIALIZAÇÃO
+        // ============================================================
+
+        renderQuestions();
+    </script>
+
+</body>
+</html>

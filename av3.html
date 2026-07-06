@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação de POO - Conceitos Fundamentais (Parte 3)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f0eb;
+            color: #1a1a2e;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            background: linear-gradient(135deg, #6a1b4d, #9c2a6b);
+            border-radius: 16px;
+            margin-bottom: 30px;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+        .header h1 span {
+            color: #ffd54f;
+        }
+        .header p {
+            font-size: 1.05rem;
+            opacity: 0.9;
+        }
+        .header .badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8e0d8;
+        }
+
+        .progress-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .progress-info span {
+            font-weight: 600;
+            color: #6a1b4d;
+        }
+        .progress-bar-bg {
+            width: 300px;
+            height: 8px;
+            background: #e8e0d8;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6a1b4d, #c2185b);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .nav-buttons button {
+            background: #f0ebe6;
+            border: 2px solid #d5cdc4;
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            min-width: 32px;
+        }
+        .nav-buttons button:hover {
+            background: #e0d8d0;
+            border-color: #6a1b4d;
+        }
+        .nav-buttons button.active {
+            background: #6a1b4d;
+            color: #fff;
+            border-color: #6a1b4d;
+        }
+        .nav-buttons button.answered-correct {
+            border-color: #2e7d32;
+            background: #e8f5e9;
+        }
+        .nav-buttons button.answered-wrong {
+            border-color: #c62828;
+            background: #ffebee;
+        }
+
+        .question-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 32px 36px;
+            border: 1px solid #e8e0d8;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            margin-bottom: 24px;
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .question-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-number {
+            display: inline-block;
+            background: #6a1b4d;
+            color: #fff;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            margin-bottom: 24px;
+            color: #1a1a2e;
+        }
+        .question-text strong {
+            color: #6a1b4d;
+        }
+
+        .alternatives {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .alternative {
+            background: #f8f5f2;
+            border: 2px solid #d5cdc4;
+            border-radius: 12px;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .alternative:hover:not(.disabled) {
+            border-color: #8a7a6a;
+            background: #f0ebe6;
+        }
+        .alternative.correct {
+            border-color: #2e7d32;
+            background: #e8f5e9;
+        }
+        .alternative.wrong {
+            border-color: #c62828;
+            background: #ffebee;
+        }
+        .alternative.revealed-correct {
+            border-color: #2e7d32;
+            background: #f1f8e9;
+        }
+        .alternative.disabled {
+            cursor: default;
+            opacity: 0.85;
+        }
+        .alternative .letter {
+            display: inline-block;
+            font-weight: 700;
+            color: #6a1b4d;
+            margin-right: 12px;
+            min-width: 20px;
+        }
+        .alternative .text {
+            color: #1a1a2e;
+        }
+        .alternative .status-icon {
+            float: right;
+            font-size: 1.2rem;
+        }
+
+        .explanation-block {
+            background: #f8f5f2;
+            border-radius: 12px;
+            padding: 16px 20px;
+            border-left: 5px solid #6a1b4d;
+            margin-top: 12px;
+            display: none;
+        }
+        .explanation-block.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        .explanation-block .exp-header {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+        .explanation-block .exp-header .tag {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+        .tag-correct {
+            background: #c8e6c9;
+            color: #1b5e20;
+        }
+        .tag-wrong {
+            background: #ffcdd2;
+            color: #b71c1c;
+        }
+        .tag-concept {
+            background: #e1bee7;
+            color: #4a148c;
+        }
+        .explanation-block .analogy {
+            background: #fff8e1;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border-left: 3px solid #f9a825;
+            margin: 6px 0;
+            color: #4e342e;
+            font-style: italic;
+        }
+        .explanation-block .example {
+            background: #ffffff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+            color: #1a1a2e;
+            margin: 6px 0;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            border: 1px solid #e0d8d0;
+        }
+        .explanation-block .justification {
+            color: #1a1a2e;
+            margin-top: 4px;
+            line-height: 1.6;
+        }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .bottom-nav button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #6a1b4d;
+            color: #fff;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #4a1234;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(106, 27, 77, 0.3);
+        }
+        .btn-secondary {
+            background: #e8e0d8;
+            color: #333;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #d5cdc4;
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .bottom-nav .info {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .summary {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 36px;
+            border: 1px solid #e8e0d8;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            display: none;
+            text-align: center;
+        }
+        .summary.visible {
+            display: block;
+            animation: fadeIn 0.6s ease;
+        }
+        .summary h2 {
+            color: #1a1a2e;
+            font-size: 1.8rem;
+        }
+        .summary .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #f5f0eb;
+            border: 5px solid #6a1b4d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #6a1b4d;
+        }
+        .summary .score-text {
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .summary .score-details {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 24px 0;
+            flex-wrap: wrap;
+        }
+        .summary .score-details div {
+            text-align: center;
+        }
+        .summary .score-details .number {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .summary .score-details .label {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        .summary .green {
+            color: #2e7d32;
+        }
+        .summary .red {
+            color: #c62828;
+        }
+        .summary .orange {
+            color: #e65100;
+        }
+        .summary .btn-restart {
+            margin-top: 20px;
+            padding: 12px 40px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            .question-card {
+                padding: 20px 18px;
+            }
+            .question-text {
+                font-size: 0.95rem;
+            }
+            .progress-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .progress-bar-bg {
+                width: 100%;
+            }
+            .nav-buttons {
+                justify-content: center;
+            }
+            .bottom-nav {
+                flex-direction: column;
+            }
+            .bottom-nav button {
+                width: 100%;
+            }
+            .summary .score-details {
+                gap: 20px;
+            }
+            .alternative {
+                padding: 12px 14px;
+                font-size: 0.9rem;
+            }
+            .explanation-block .example {
+                font-size: 0.7rem;
+                padding: 6px 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            .header p {
+                font-size: 0.9rem;
+            }
+            .question-card {
+                padding: 14px 10px;
+            }
+            .explanation-block {
+                padding: 12px 14px;
+            }
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 10px;
+            }
+            .header {
+                background: #6a1b4d !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .alternative.correct {
+                background: #e8f5e9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .alternative.wrong {
+                background: #ffebee !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .explanation-block {
+                display: block !important;
+            }
+            .bottom-nav {
+                display: none !important;
+            }
+            .nav-buttons {
+                display: none !important;
+            }
+            .progress-container {
+                display: none !important;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5f0eb;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c0b8b0;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a09888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <h1>📚 Avaliação de <span>POO - Conceitos Fundamentais</span></h1>
+            <p>Terceira Atividade • Classes, Objetos, Construtores, Encapsulamento • 9 questões</p>
+            <span class="badge">🎯 Clique em uma alternativa → veja a explicação de TODAS as opções</span>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-info">
+                <span id="currentLabel">Questão 1 de 9</span>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressFill"></div>
+                </div>
+            </div>
+            <div class="nav-buttons" id="navButtons"></div>
+        </div>
+
+        <div id="questionsContainer"></div>
+
+        <div class="summary" id="summary">
+            <h2>🏆 Resultado Final</h2>
+            <div class="score-circle" id="scoreCircle">0%</div>
+            <div class="score-text" id="scoreText">Você acertou 0 de 9 questões</div>
+            <div class="score-details">
+                <div><div class="number green" id="correctCount">0</div><div class="label">✅ Corretas</div></div>
+                <div><div class="number red" id="wrongCount">0</div><div class="label">❌ Erradas</div></div>
+                <div><div class="number orange" id="unansweredCount">9</div><div class="label">⏳ Não respondidas</div></div>
+            </div>
+            <button class="btn-primary btn-restart" onclick="restartQuiz()">🔄 Refazer Avaliação</button>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        // DADOS COMPLETOS DAS 9 QUESTÕES - TEXTO INTEGRAL
+        // ============================================================
+
+        const questionsData = [{
+            id: 1,
+            text: `Imagine que você é um desenvolvedor de software junior em uma empresa de desenvolvimento de aplicativos móveis. Recentemente, sua equipe foi designada para criar um aplicativo de gerenciamento de tarefas, e você foi encarregado de projetar a estrutura de classes para o aplicativo. Durante a reunião de brainstorming, seu colega sugeriu a utilização de conceitos de programação orientada a objetos (POO) para melhor organizar o código do aplicativo. No entanto, você está um pouco confuso sobre o que exatamente são esses conceitos iniciais de POO e como aplicá-los de forma eficaz no projeto. Para ajudar a sua equipe a tomar uma decisão informada, você decide mergulhar mais a fundo no assunto.<br><br><strong>Considerando a situação apresentada, qual é a melhor definição para os conceitos iniciais de Programação Orientada a Objetos (POO)?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'A POO é uma técnica de programação que se concentra na criação de funções e procedimentos para resolver problemas de forma sequencial.' },
+                { letter: 'B', text: 'A POO é uma abordagem de programação que se baseia na organização de dados e funcionalidades em objetos reutilizáveis, permitindo uma maior modularidade e reusabilidade do código.' },
+                { letter: 'C', text: 'A POO é uma técnica de programação que se concentra exclusivamente na criação de interfaces de usuário atraentes e intuitivas.' },
+                { letter: 'D', text: 'A POO é uma abordagem de programação que se baseia na criação de programas independentes que não interagem uns com os outros.' }
+            ],
+            correct: 'B',
+            explanations: {
+                A: {
+                    concept: 'Programação Procedural vs. POO',
+                    example: `// ❌ Definição de programação procedural\n// - Funções e procedimentos\n// - Execução sequencial\n// - Dados separados das funções\nfunction calcularMedia(notas) {\n    let soma = 0;\n    for (let n of notas) soma += n;\n    return soma / notas.length;\n}`,
+                    analogy: '📋 Isso descreve a programação procedural (como C ou Pascal), onde o foco está em funções e procedimentos. Não é a definição de POO.',
+                    justification: 'Esta definição descreve a programação procedural, não a POO. A programação procedural se concentra em funções e procedimentos que operam sobre dados, enquanto a POO organiza dados e comportamentos em objetos.'
+                },
+                B: {
+                    concept: 'Definição de POO',
+                    example: `// ✅ Definição correta de POO\n// - Objetos como unidades de organização\n// - Dados (atributos) e comportamentos (métodos) juntos\n// - Reutilização, modularidade, encapsulamento\nclass Tarefa {\n    String titulo;\n    boolean concluida;\n    void marcarConcluida() { /* ... */ }\n}`,
+                    analogy: '🏗️ A POO é como construir com blocos de Lego: cada bloco (objeto) tem sua forma e função, pode ser reutilizado em diferentes construções (modularidade) e combinado de várias maneiras (reusabilidade).',
+                    justification: '✅ Esta é a definição correta de POO. Ela organiza dados e funcionalidades em objetos reutilizáveis, permitindo modularidade, encapsulamento e reusabilidade do código.'
+                },
+                C: {
+                    concept: 'POO ≠ Interface de Usuário',
+                    example: `// ❌ POO não é sobre interfaces gráficas\n// POO é um paradigma de programação\n// Pode ser usado para UI, mas não se limita a isso`,
+                    analogy: '🎨 Confundir POO com design de interface é como confundir a fundação de uma casa com a decoração. A POO é a estrutura, não a aparência.',
+                    justification: 'POO não se concentra exclusivamente em interfaces de usuário. Embora possa ser usada para criar interfaces, a POO é um paradigma de programação que organiza código em objetos com dados e comportamentos.'
+                },
+                D: {
+                    concept: 'POO ≠ Programas Independentes',
+                    example: `// ❌ POO não cria programas isolados\n// Objetos interagem entre si\n// O sistema é formado por objetos colaborativos`,
+                    analogy: '🏝️ Programas em POO não são ilhas isoladas. Os objetos interagem como uma equipe, trocando mensagens e colaborando para resolver problemas.',
+                    justification: 'POO não se baseia em programas independentes e isolados. Pelo contrário, a POO enfatiza a interação entre objetos através de mensagens e colaboração.'
+                }
+            }
+        }, {
+            id: 2,
+            text: `Você foi designado para trabalhar na estruturação das classes do aplicativo, mas está enfrentando dificuldades em compreender como organizar os objetos e suas relações. Para superar esse desafio, você decide mergulhar mais a fundo nos conceitos iniciais de POO, especialmente em relação à criação e organização de classes e objetos.<br><br><strong>Considerando a situação apresentada e os conceitos iniciais de Programação Orientada a Objetos (POO), qual das seguintes afirmações é verdadeira?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Em POO, as classes são usadas apenas para criar objetos, enquanto os objetos são responsáveis pela definição dos comportamentos e características do programa.' },
+                { letter: 'B', text: 'Em POO, as classes são as estruturas que definem os comportamentos e características dos objetos, enquanto os objetos são instâncias específicas dessas classes.' },
+                { letter: 'C', text: 'Em POO, as classes e os objetos são termos intercambiáveis e podem ser usados de forma intercambiável.' },
+                { letter: 'D', text: 'Em POO, as classes são as instâncias específicas que definem os comportamentos e características do programa, enquanto os objetos são estruturas abstratas usadas para criar instâncias das classes.' }
+            ],
+            correct: 'B',
+            explanations: {
+                A: {
+                    concept: 'Relação Classe ↔ Objeto (Invertida)',
+                    example: `// ❌ Afirmação incorreta sobre a relação\n// Classes não são APENAS para criar objetos\n// Objetos não definem comportamentos (as classes definem)`,
+                    analogy: '🏠 É como dizer que uma planta de casa serve apenas para construir casas, e as casas é que definem como deve ser uma planta.',
+                    justification: 'Esta afirmação inverte a relação correta. As classes definem os comportamentos e características (o molde), enquanto os objetos são instâncias específicas que possuem esses comportamentos e características.'
+                },
+                B: {
+                    concept: 'Relação Classe ↔ Objeto (Correta)',
+                    example: `// ✅ Relação correta\n// Classe: molde que define atributos e métodos\nclass Tarefa {\n    String titulo;\n    void concluir() { /* ... */ }\n}\n// Objeto: instância específica da classe\nTarefa tarefa1 = new Tarefa();\ntarefa1.titulo = "Estudar POO";`,
+                    analogy: '🏠 A classe é como a planta de uma casa (define como a casa deve ser). O objeto é a casa construída a partir dessa planta (uma instância específica).',
+                    justification: '✅ Esta é a afirmação correta. Classes são estruturas abstratas que definem atributos e métodos. Objetos são instâncias concretas dessas classes, com valores específicos para os atributos.'
+                },
+                C: {
+                    concept: 'Classe ≠ Objeto (Termos Não Intercambiáveis)',
+                    example: `// ❌ Não são intercambiáveis\n// Classe: o molde (abstrato)\n// Objeto: a instância (concreto)\n// Um é conceito, o outro é realidade`,
+                    analogy: '📐 Classe e objeto não são intercambiáveis. É como confundir a receita de um bolo com o bolo assado. A receita é o molde (classe), o bolo é a instância (objeto).',
+                    justification: 'Classes e objetos não são termos intercambiáveis. A classe é o molde abstrato, enquanto o objeto é a instância concreta criada a partir desse molde.'
+                },
+                D: {
+                    concept: 'Relação Invertida (Erro Conceitual)',
+                    example: `// ❌ Inverte completamente a relação\n// Classes NÃO são instâncias\n// Objetos NÃO são estruturas abstratas`,
+                    analogy: '🔁 É como dizer que uma casa é a planta (abstrata) e a planta é a casa (concreta). A relação está completamente invertida.',
+                    justification: 'Esta afirmação inverte completamente a relação. Classes não são instâncias específicas; são estruturas abstratas. Objetos não são estruturas abstratas; são instâncias concretas.'
+                }
+            }
+        }, {
+            id: 3,
+            text: `Sua equipe de desenvolvimento avançou para a próxima etapa do projeto: a codificação de programas orientados a objetos com ênfase na utilização de construtores. Sua tarefa é aplicar os conhecimentos adquiridos para implementar construtores nas classes do aplicativo de gerenciamento de tarefas. Isso permitirá que os objetos sejam inicializados corretamente e estejam prontos para uso. No entanto, você enfrenta desafios ao entender como criar construtores eficazes e como configurar adequadamente os objetos por meio deles.<br><br><strong>Considerando a situação apresentada e os conceitos de construtores em Programação Orientada a Objetos (POO), qual é a função principal dos construtores na criação de objetos?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Construtores são responsáveis por destruir objetos após o uso em um programa.' },
+                { letter: 'B', text: 'Construtores são métodos especiais utilizados para inicializar objetos de uma classe e definem como os objetos devem ser criados e configurados.' },
+                { letter: 'C', text: 'Construtores são usados apenas em linguagens de programação de alto nível, como Python e JavaScript.' },
+                { letter: 'D', text: 'Construtores são usados exclusivamente para criar classes derivadas a partir de uma classe base.' }
+            ],
+            correct: 'B',
+            explanations: {
+                A: {
+                    concept: 'Função Incorreta (Destruir Objetos)',
+                    example: `// ❌ Quem destrói objetos é o destructor\n// Construtor: cria e inicializa\n// Destrutor: finaliza e libera recursos\n// Em Java: finalize() / garbage collector\n// Em C++: destrutor ~Classe()`,
+                    analogy: '🏗️ Um construtor é como um pedreiro que constrói uma casa. Quem destrói a casa é o demolidor (destrutor), não o construtor.',
+                    justification: 'A função de destruir objetos não é do construtor, mas sim do destrutor (ou do garbage collector em linguagens como Java). O construtor tem a função oposta: criar e inicializar.'
+                },
+                B: {
+                    concept: 'Função Principal dos Construtores',
+                    example: `// ✅ Construtor: inicializa objetos\nclass Tarefa {\n    String titulo;\n    String descricao;\n    // Construtor\n    Tarefa(String titulo, String descricao) {\n        this.titulo = titulo;\n        this.descricao = descricao;\n    }\n}\n// Uso: Tarefa t = new Tarefa("Estudar", "POO");`,
+                    analogy: '🏗️ Um construtor é como um mestre de obras que recebe os materiais e constrói a casa do jeito certo, garantindo que tudo esteja pronto para uso.',
+                    justification: '✅ Esta é a definição correta. Construtores são métodos especiais que inicializam objetos, definindo como devem ser criados e configurados. Eles garantem que o objeto comece seu ciclo de vida em um estado válido.'
+                },
+                C: {
+                    concept: 'Construtores são Universais',
+                    example: `// ❌ Construtores existem em várias linguagens\n// Java: Tarefa() { }\n// C++: Tarefa() { }\n// Python: def __init__(self):\n// C#: public Tarefa() { }\n// Não se limitam a linguagens de alto nível`,
+                    analogy: '🔧 Construtores não são exclusivos de linguagens de alto nível. Eles existem em diversas linguagens, desde C++ (baixo nível) até Python (alto nível).',
+                    justification: 'Construtores não são exclusivos de linguagens de alto nível. Eles existem em linguagens como C++, Java, C#, Python, entre outras, sendo um conceito fundamental da POO.'
+                },
+                D: {
+                    concept: 'Construtores vs. Herança',
+                    example: `// ❌ Construtores não criam classes derivadas\n// Herança: class TarefaPrioritaria extends Tarefa\n// Construtores: TarefaPrioritaria() { super(); }\n// Um é mecanismo de herança, outro de inicialização`,
+                    analogy: '🧬 Construtores não criam classes derivadas. A criação de subclasses é feita através de herança (extends/implements). Construtores são usados para inicializar objetos, não para criar novas classes.',
+                    justification: 'Construtores não são usados para criar classes derivadas. A criação de subclasses é realizada através de mecanismos de herança (extends em Java, : em C++). Construtores são para inicialização de objetos.'
+                }
+            }
+        }, {
+            id: 4,
+            text: `Agora que você compreendeu com sucesso a implementação de construtores em programas orientados a objetos, sua equipe de desenvolvimento avançou para a próxima fase do projeto: a codificação de programas orientados a objetos com ênfase no encapsulamento e nos métodos modificadores e assessores. Sua tarefa é aplicar esses conceitos em seu aplicativo de gerenciamento de tarefas para garantir a integridade dos dados e a segurança do código. No entanto, você precisa entender como utilizar os métodos modificadores e assessores de forma eficaz para controlar o acesso aos membros de classe e garantir que as alterações de dados sejam realizadas de maneira segura.<br><br><strong>Considerando a situação apresentada e os conceitos de encapsulamento, métodos modificadores e assessores em Programação Orientada a Objetos (POO), qual das seguintes afirmações é verdadeira?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Encapsulamento em POO é a prática de expor todos os membros de uma classe diretamente para acesso externo, sem restrições.' },
+                { letter: 'B', text: 'Métodos modificadores são usados apenas para fornecer acesso somente leitura aos membros de uma classe.' },
+                { letter: 'C', text: 'Métodos modificadores e assessores são termos intercambiáveis e podem ser usados de forma intercambiável em POO.' },
+                { letter: 'D', text: 'Métodos modificadores são usados para modificar os membros privados de uma classe, enquanto os métodos assessores são usados para fornecer acesso controlado e somente leitura a esses membros.' }
+            ],
+            correct: 'D',
+            explanations: {
+                A: {
+                    concept: 'Encapsulamento (Definição Incorreta)',
+                    example: `// ❌ Expor tudo NÃO é encapsulamento\n// Encapsulamento: ocultar detalhes internos\n// Proteger dados contra acesso indevido\nclass Tarefa {\n    public String titulo; // ❌ Exposto\n    public void setTitulo(String t) { /* */ }\n}`,
+                    analogy: '🔓 Expor todos os membros de uma classe é como deixar todas as portas de uma casa abertas. Não é encapsulamento; é justamente o oposto.',
+                    justification: 'Encapsulamento é a prática de ocultar os detalhes internos de uma classe e controlar o acesso através de métodos públicos. Expor todos os membros diretamente é a negação do encapsulamento.'
+                },
+                B: {
+                    concept: 'Métodos Modificadores (Getters/Setters)',
+                    example: `// ❌ Modificadores não são apenas leitura\n// Setter: modifica (escreve)\n// Getter: acessa (lê)\nclass Tarefa {\n    private String titulo;\n    // Getter (assessor) - leitura\n    public String getTitulo() { return titulo; }\n    // Setter (modificador) - escrita\n    public void setTitulo(String t) { this.titulo = t; }\n}`,
+                    analogy: '📝 Métodos modificadores (setters) são como canetas que escrevem (modificam). Métodos assessores (getters) são como leitores que apenas leem. Um escreve, outro lê.',
+                    justification: 'Métodos modificadores (setters) são usados para MODIFICAR/ESCREVER valores em membros privados. Métodos assessores (getters) são usados para LER/ACESSAR esses valores. Não são apenas para leitura.'
+                },
+                C: {
+                    concept: 'Modificadores ≠ Assessores (Termos Diferentes)',
+                    example: `// ❌ Não são intercambiáveis\n// Modificador (setter): altera o estado\n// Assessor (getter): consulta o estado\n// Um escreve, o outro lê - funções opostas`,
+                    analogy: '📚 Modificador e assessor não são intercambiáveis, assim como "escrever" e "ler" não são a mesma coisa. Cada um tem sua função específica.',
+                    justification: 'Métodos modificadores e assessores não são intercambiáveis. Modificadores (setters) alteram o valor de um atributo, enquanto assessores (getters) apenas retornam o valor sem modificá-lo.'
+                },
+                D: {
+                    concept: 'Modificadores e Assessores (Definição Correta)',
+                    example: `// ✅ Definição correta\nclass Tarefa {\n    private String titulo; // atributo privado\n    \n    // Assessor (getter) - acesso controlado e leitura\n    public String getTitulo() { \n        return titulo; \n    }\n    \n    // Modificador (setter) - modifica com validação\n    public void setTitulo(String titulo) {\n        if (titulo != null && !titulo.isEmpty()) {\n            this.titulo = titulo;\n        }\n    }\n}`,
+                    analogy: '🔐 É como ter um cofre (atributo privado) com duas pessoas: uma só pode olhar (getter/assessor) e outra pode colocar ou tirar coisas (setter/modificador), mas ambas seguem regras de acesso.',
+                    justification: '✅ Esta é a definição correta. Métodos modificadores (setters) modificam membros privados, geralmente com validação. Métodos assessores (getters) fornecem acesso controlado e somente leitura a esses membros.'
+                }
+            }
+        }, {
+            id: 5,
+            text: `Você percebe que precisa de um entendimento mais sólido dos conceitos iniciais de Programação Orientada a Objetos (POO) para o desenvolvimento de seu aplicativo de gerenciamento de tarefas. Você foi designado para trabalhar na estruturação das classes do aplicativo, mas está enfrentando dificuldades em compreender como organizar os objetos e suas relações. Para superar esse desafio, você decide estudar com mais profundidade os conceitos iniciais de POO, focando especialmente na criação e organização de classes e objetos.<br><br><strong>Considerando a situação apresentada e os conceitos iniciais de Programação Orientada a Objetos (POO), qual dos seguintes princípios é fundamental para POO?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'A POO se concentra exclusivamente na criação de interfaces de usuário atraentes e intuitivas.' },
+                { letter: 'B', text: 'A POO é uma técnica de programação que se baseia apenas na criação de funções e procedimentos para resolver problemas de forma sequencial.' },
+                { letter: 'C', text: 'A POO se baseia na organização de dados e funcionalidades em objetos reutilizáveis, permitindo uma maior modularidade e reusabilidade do código.' },
+                { letter: 'D', text: 'A POO é uma técnica de programação que se concentra apenas na criação de programas independentes que não interagem uns com os outros.' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'POO ≠ UI',
+                    example: `// ❌ POO não é sobre interfaces gráficas\n// POO é um paradigma de programação\n// Pode ser usado para UI, mas não é seu foco exclusivo\n// Ex: POO é usada em sistemas backend, bibliotecas, etc.`,
+                    analogy: '🎨 POO não é sobre criar telas bonitas. É sobre organizar código. É a estrutura, não a decoração.',
+                    justification: 'A POO não se concentra exclusivamente em interfaces de usuário. É um paradigma de programação que pode ser aplicado em qualquer tipo de software.'
+                },
+                B: {
+                    concept: 'POO ≠ Programação Procedural',
+                    example: `// ❌ Definição de programação procedural\n// Funções e procedimentos\n// Execução sequencial\n// Dados separados das funções\n// Ex: C, Pascal, Fortran`,
+                    analogy: '📋 Isso é programação procedural (como C). POO é diferente: organiza dados e comportamentos juntos em objetos.',
+                    justification: 'Esta descrição corresponde à programação procedural, não à POO. A POO organiza código em objetos que contêm dados e comportamentos juntos.'
+                },
+                C: {
+                    concept: 'Princípio Fundamental da POO',
+                    example: `// ✅ Princípio fundamental\n// Objetos: dados + comportamentos\n// Modularidade: partes independentes\n// Reusabilidade: reutilizar em outros projetos\nclass Tarefa {\n    String titulo;\n    void concluir() { /* */ }\n}\n// O mesmo objeto pode ser usado em vários contextos`,
+                    analogy: '🧱 POO é como construir com blocos de Lego: cada bloco (objeto) é autossuficiente, pode ser reutilizado em diferentes construções e é fácil de substituir ou modificar.',
+                    justification: '✅ Este é o princípio fundamental da POO: organizar dados e funcionalidades em objetos reutilizáveis, permitindo modularidade e reusabilidade do código.'
+                },
+                D: {
+                    concept: 'POO ≠ Programas Independentes',
+                    example: `// ❌ POO não cria programas isolados\n// Objetos interagem através de mensagens\n// Um sistema POO é uma rede de objetos colaborativos`,
+                    analogy: '🏝️ POO não cria ilhas isoladas. Os objetos trabalham juntos, como uma equipe, trocando mensagens e colaborando para resolver problemas complexos.',
+                    justification: 'POO não se baseia em programas independentes. Pelo contrário, enfatiza a interação e colaboração entre objetos através do envio de mensagens.'
+                }
+            }
+        }, {
+            id: 6,
+            text: `Após a dificuldade enfrentada na configuração dos ambientes de desenvolvimento para o aplicativo de gerenciamento de tarefas, você percebe que precisa aprimorar suas habilidades no uso de ambientes de desenvolvimento para o desenvolvimento desktop. Sua equipe está ansiosa para otimizar o fluxo de trabalho e garantir que todos os membros possam colaborar eficazmente, mesmo trabalhando remotamente. Nesse contexto, sua tarefa é aprofundar seu conhecimento nos recursos desses ambientes, explorando ferramentas e práticas que permitam o desenvolvimento mais eficiente do aplicativo e a colaboração transparente entre os membros da equipe.<br><br><strong>Considerando a situação apresentada e os conceitos de ambientes de desenvolvimento para o desenvolvimento desktop, qual dos seguintes recursos é comumente utilizado para permitir a colaboração e o compartilhamento de código entre membros de uma equipe de desenvolvimento que trabalham remotamente?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Ambientes de desenvolvimento desktop não oferecem recursos para colaboração remota.' },
+                { letter: 'B', text: 'Controle de versão usando sistemas como Git, que permitem o rastreamento de alterações e o compartilhamento de código.' },
+                { letter: 'C', text: 'Ambientes de desenvolvimento desktop são projetados exclusivamente para desenvolvedores individuais, sem suporte para colaboração em equipe.' },
+                { letter: 'D', text: 'Compartilhamento de código por e-mail, uma prática comum em equipes remotas de desenvolvimento.' }
+            ],
+            correct: 'B',
+            explanations: {
+                A: {
+                    concept: 'Colaboração em IDEs (Afirmação Falsa)',
+                    example: `// ❌ IDEs modernas têm recursos de colaboração\n// - Extensões para pair programming\n// - Compartilhamento de terminais\n// - Visualização simultânea de código\n// Ex: VS Code Live Share, IntelliJ Code With Me`,
+                    analogy: '🏢 Dizer que ambientes desktop não têm colaboração remota é como dizer que escritórios modernos não têm internet. É uma afirmação falsa.',
+                    justification: 'Ambientes de desenvolvimento desktop modernos oferecem diversos recursos para colaboração remota, como extensões para pair programming, compartilhamento de tela e edição colaborativa.'
+                },
+                B: {
+                    concept: 'Controle de Versão (Git)',
+                    example: `// ✅ Git é a ferramenta padrão para colaboração\n// - Rastreia todas as alterações\n// - Permite trabalho simultâneo\n// - Facilita merge de código\n// - Plataformas: GitHub, GitLab, Bitbucket\n\n// Comandos básicos:\n// git clone (baixar)\n// git add / git commit (salvar local)\n// git push (enviar) / git pull (receber)`,
+                    analogy: '📂 O controle de versão com Git é como um sistema de arquivos compartilhado com histórico. Todos veem as alterações, sabem quem fez o quê e podem trabalhar simultaneamente sem conflitos.',
+                    justification: '✅ O controle de versão com Git é o recurso mais utilizado para colaboração remota. Permite rastrear alterações, compartilhar código, trabalhar em paralelo e resolver conflitos de forma eficiente.'
+                },
+                C: {
+                    concept: 'IDEs e Trabalho em Equipe (Afirmação Falsa)',
+                    example: `// ❌ IDEs modernas suportam equipes\n// - Integração com Git\n// - Plugins de colaboração\n// - Sistemas de build compartilhados\n// - Padrões de código compartilhados`,
+                    analogy: '👥 IDEs modernas não são apenas para desenvolvedores individuais. Elas são projetadas para equipes, com integração a ferramentas de colaboração.',
+                    justification: 'Ambientes de desenvolvimento desktop modernos são projetados para suportar trabalho em equipe, com integração a sistemas de controle de versão, ferramentas de revisão de código e recursos de colaboração.'
+                },
+                D: {
+                    concept: 'Compartilhamento por E-mail (Obsoleto)',
+                    example: `// ❌ E-mail é ineficiente para compartilhar código\n// - Perde histórico de versões\n// - Difícil gerenciar conflitos\n// - Sem rastreamento de alterações\n// - Sem revisão integrada`,
+                    analogy: '📧 Compartilhar código por e-mail é como enviar cartas em vez de usar um sistema de mensagens moderno. É lento, desorganizado e propenso a erros.',
+                    justification: 'Compartilhar código por e-mail não é uma prática comum nem recomendada. É ineficiente, não oferece rastreamento de versões e dificulta a colaboração em equipe.'
+                }
+            }
+        }, {
+            id: 7,
+            text: `Sua equipe de desenvolvimento agora quer que você se concentre em utilizar ambientes de desenvolvimento para desenvolvimento desktop de forma eficaz. Você foi designado para configurar um ambiente de desenvolvimento para o aplicativo de gerenciamento de tarefas e precisa aprender a usar ferramentas de desenvolvimento para criar interfaces de usuário atraentes e intuitivas. Para superar esse desafio, você decide mergulhar nos conceitos de ambientes de desenvolvimento desktop e aprender a utilizar as ferramentas disponíveis para criar uma interface de usuário amigável para o aplicativo.<br><br><strong>Considerando a situação apresentada e os conceitos de ambientes de desenvolvimento para desenvolvimento desktop, qual é o principal objetivo da utilização desses ambientes no desenvolvimento de aplicativos?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'A principal função de ambientes de desenvolvimento desktop é a criação de programas exclusivamente para sistemas operacionais móveis.' },
+                { letter: 'B', text: 'Ambientes de desenvolvimento desktop são usados apenas para criar interfaces de usuário complexas, não sendo adequados para aplicativos mais simples.' },
+                { letter: 'C', text: 'Ambientes de desenvolvimento desktop são projetados para facilitar o desenvolvimento de aplicativos para plataformas desktop, como Windows, macOS e Linux, incluindo a criação de interfaces de usuário amigáveis.' },
+                { letter: 'D', text: 'Ambientes de desenvolvimento desktop são voltados exclusivamente para desenvolvedores experientes e não são adequados para iniciantes.' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'Desktop ≠ Mobile',
+                    example: `// ❌ Desktop é para computadores, não para mobile\n// Windows, macOS, Linux\n// Exemplos de IDEs desktop: VS Code, IntelliJ, Eclipse\n// Mobile: Android Studio, Xcode (são para mobile)`,
+                    analogy: '📱 Ambientes desktop são para aplicativos de computador (como Windows). Aplicativos móveis (Android/iOS) usam outros ambientes específicos.',
+                    justification: 'Ambientes de desenvolvimento desktop são para aplicativos desktop (Windows, macOS, Linux), não para sistemas móveis. Para mobile existem IDEs específicas como Android Studio e Xcode.'
+                },
+                B: {
+                    concept: 'IDEs para Aplicativos Simples e Complexos',
+                    example: `// ❌ IDEs servem para todo tipo de aplicativo\n// - Desde "Hello World" até sistemas complexos\n// - Simples: Console.WriteLine("Olá")\n// - Complexo: ERP, sistemas desktop completos\n// A IDE é a ferramenta, não o tipo de aplicativo`,
+                    analogy: '🛠️ Uma IDE é como uma caixa de ferramentas. Serve tanto para fazer uma cadeira simples quanto uma casa complexa. A ferramenta se adapta ao projeto.',
+                    justification: 'Ambientes de desenvolvimento desktop não se limitam a aplicativos complexos. São usados para todo tipo de aplicativo desktop, desde os mais simples aos mais complexos.'
+                },
+                C: {
+                    concept: 'Objetivo das IDEs Desktop',
+                    example: `// ✅ Objetivo: facilitar o desenvolvimento desktop\n// - Windows: Visual Studio, VS Code\n// - macOS: Xcode, VS Code\n// - Linux: VS Code, IntelliJ\n// - Ferramentas para criar UI amigável\n// - Debug, build, deploy integrados`,
+                    analogy: '🏗️ Um ambiente de desenvolvimento desktop é como uma oficina completa com todas as ferramentas necessárias para construir aplicativos para computador de forma eficiente.',
+                    justification: '✅ Esta é a definição correta. Ambientes de desenvolvimento desktop são projetados para facilitar o desenvolvimento de aplicativos para plataformas desktop (Windows, macOS, Linux), incluindo a criação de interfaces de usuário amigáveis.'
+                },
+                D: {
+                    concept: 'IDEs para Iniciantes e Experientes',
+                    example: `// ❌ IDEs são para todos os níveis\n// - VS Code: fácil para iniciantes\n// - IntelliJ: guias para iniciantes\n// - Eclipse: ampla documentação\n// - Todas têm recursos para aprendizado`,
+                    analogy: '📚 Uma boa IDE é como um bom livro didático: serve tanto para quem está começando quanto para quem já é especialista.',
+                    justification: 'Ambientes de desenvolvimento desktop não são exclusivos para desenvolvedores experientes. Existem IDEs com curvas de aprendizado suaves e recursos que auxiliam iniciantes.'
+                }
+            }
+        }, {
+            id: 8,
+            text: `Sua equipe de desenvolvimento avançou para a próxima fase do projeto: a aplicação de construtores nas classes do aplicativo de gerenciamento de tarefas. Sua tarefa é implementar construtores nas classes relevantes para garantir que os objetos sejam inicializados corretamente e prontos para uso. Além disso, você precisa aprofundar seus conhecimentos em relação aos construtores, compreendendo a importância deles no contexto da POO.<br><br><strong>Considerando a situação apresentada e os conceitos de construtores em Programação Orientada a Objetos (POO), qual é a função principal dos construtores na criação de objetos?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Construtores são responsáveis por destruir objetos após o uso em um programa.' },
+                { letter: 'B', text: 'Construtores são métodos especiais utilizados para inicializar objetos de uma classe e definem como os objetos devem ser criados e configurados.' },
+                { letter: 'C', text: 'Os construtores são usados exclusivamente para criar classes derivadas a partir de uma classe base.' },
+                { letter: 'D', text: 'Construtores são usados apenas em linguagens de programação de alto nível, como Python e JavaScript.' }
+            ],
+            correct: 'B',
+            explanations: {
+                A: {
+                    concept: 'Função Incorreta (Destruir Objetos)',
+                    example: `// ❌ Quem destrói é o destrutor (ou GC)\n// C++: ~Classe() (destrutor)\n// Java: finalize() + Garbage Collector\n// C#: ~Classe() (destrutor)\n// O construtor faz o oposto: cria e inicializa`,
+                    analogy: '🏗️ O construtor constrói, o destrutor destrói. São opostos. Confundir os dois é como confundir um pedreiro com um demolidor.',
+                    justification: 'A destruição de objetos é função do destrutor ou do garbage collector, não do construtor. O construtor tem a função oposta: criar e inicializar objetos.'
+                },
+                B: {
+                    concept: 'Função Principal dos Construtores',
+                    example: `// ✅ Construtor: inicializa objetos corretamente\nclass Tarefa {\n    String titulo;\n    boolean concluida;\n    \n    // Construtor com parâmetros\n    Tarefa(String titulo) {\n        this.titulo = titulo;\n        this.concluida = false; // estado inicial\n    }\n}\n// Uso: Tarefa t = new Tarefa("Estudar POO");`,
+                    analogy: '🏗️ O construtor é como um "ritual de nascimento" do objeto. Quando um objeto nasce, o construtor garante que ele comece sua vida em um estado válido e pronto para uso.',
+                    justification: '✅ Esta é a definição correta. Construtores são métodos especiais que inicializam objetos, definindo seu estado inicial e garantindo que estejam prontos para uso.'
+                },
+                C: {
+                    concept: 'Construtores vs. Herança',
+                    example: `// ❌ Construtores não criam classes derivadas\n// Herança: class TarefaPrioritaria extends Tarefa\n// Construtor: TarefaPrioritaria(String t) { super(t); }\n// Um é mecanismo de herança, outro de inicialização`,
+                    analogy: '🧬 Construtores não criam classes derivadas. A criação de subclasses é feita através de herança (extends). Construtores inicializam objetos dessas classes.',
+                    justification: 'Construtores não são usados para criar classes derivadas. A criação de subclasses é realizada através de herança, não por construtores.'
+                },
+                D: {
+                    concept: 'Construtores são Universais',
+                    example: `// ❌ Construtores existem em várias linguagens\n// Java: Tarefa() { }\n// C++: Tarefa() { }\n// Python: def __init__(self):\n// C#: public Tarefa() { }\n// Até em linguagens como C++ (baixo nível)`,
+                    analogy: '🔧 Construtores não são de uma linguagem específica. São um conceito universal da POO, presente em praticamente todas as linguagens orientadas a objetos.',
+                    justification: 'Construtores não são exclusivos de linguagens de alto nível. São um conceito fundamental da POO presente em praticamente todas as linguagens orientadas a objetos.'
+                }
+            }
+        }, {
+            id: 9,
+            text: `Sua equipe de desenvolvimento decidiu que é crucial que você compreenda bem os conceitos iniciais da POO, como classes, objetos e encapsulamento, antes de avançar no projeto. Sua tarefa é estudar esses conceitos básicos e entender como eles se aplicam à programação orientada a objetos.<br><br><strong>Considerando a situação apresentada e os conceitos iniciais de Programação Orientada a Objetos (POO), qual é a principal unidade de construção em POO que define o molde ou a estrutura para a criação de objetos?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Métodos' },
+                { letter: 'B', text: 'Encapsulamento' },
+                { letter: 'C', text: 'Classes' },
+                { letter: 'D', text: 'Objetos' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'Métodos ≠ Molde',
+                    example: `// ❌ Métodos são comportamentos\n// Métodos são funções dentro de classes\n// Exemplo: void concluir() { }\n// Eles definem O QUE o objeto faz, não o molde\n// O molde é a classe, os métodos são ações`,
+                    analogy: '🏠 Os métodos são como as ações que acontecem dentro de uma casa (cozinhar, dormir). A casa em si (o molde) é a classe.',
+                    justification: 'Métodos são comportamentos que os objetos executam. Não são o molde para criação de objetos. A classe é que define o molde.'
+                },
+                B: {
+                    concept: 'Encapsulamento ≠ Molde',
+                    example: `// ❌ Encapsulamento é um princípio\n// Encapsulamento: ocultar detalhes internos\n// É uma técnica de proteção, não o molde\n// Exemplo: atributos private com getters/setters`,
+                    analogy: '🔐 Encapsulamento é como o cadeado de uma casa. É uma proteção, não a estrutura da casa em si. A classe (a planta da casa) é o molde.',
+                    justification: 'Encapsulamento é um princípio de POO que protege os dados de uma classe. Não é a unidade de construção (molde) para criação de objetos.'
+                },
+                C: {
+                    concept: 'Classe é o Molde',
+                    example: `// ✅ Classe: molde para criação de objetos\nclass Tarefa {          // ← CLASSE (molde)\n    String titulo;      // atributo\n    void concluir() { } // método\n}\n// Instanciando objetos a partir do molde\nTarefa t1 = new Tarefa();\nTarefa t2 = new Tarefa(); // dois objetos da mesma classe`,
+                    analogy: '🏗️ A classe é como a forma de um bolo (o molde). O objeto é o bolo assado nessa forma. A forma define como todos os bolos (objetos) serão.',
+                    justification: '✅ Classes são a principal unidade de construção em POO. Uma classe define o molde (atributos e métodos) para a criação de objetos.'
+                },
+                D: {
+                    concept: 'Objeto ≠ Molde',
+                    example: `// ❌ Objeto é a instância, não o molde\n// Objeto: criação a partir do molde\nTarefa t1 = new Tarefa(); // t1 é um OBJETO\n// Objetos são instâncias específicas\n// O molde é a classe, não o objeto`,
+                    analogy: '🏠 Objetos são as casas construídas. O molde (planta) é a classe. A casa em si não é o molde, é o resultado do molde.',
+                    justification: 'Objetos são instâncias específicas criadas a partir de uma classe. Não são o molde. A classe é que define a estrutura para a criação de objetos.'
+                }
+            }
+        }];
+
+        // ============================================================
+        // LÓGICA DO QUIZ
+        // ============================================================
+
+        let currentQuestion = 0;
+        let answers = {};
+        const totalQuestions = questionsData.length;
+
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            questionsData.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = `question-card ${index === currentQuestion ? 'active' : ''}`;
+                card.id = `question-${index}`;
+
+                let html = `
+                    <div class="question-number">Questão ${index + 1} de ${totalQuestions}</div>
+                    <div class="question-text">${q.text}</div>
+                    <div class="alternatives">
+                `;
+
+                q.alternatives.forEach((alt, altIndex) => {
+                    const isCorrect = alt.letter === q.correct;
+                    const isAnswered = answers[index] !== undefined;
+                    const isSelected = answers[index] === alt.letter;
+                    let extraClass = '';
+                    let statusIcon = '';
+                    let disabledClass = '';
+
+                    if (isAnswered) {
+                        disabledClass = 'disabled';
+                        if (isSelected && isCorrect) {
+                            extraClass = 'correct';
+                            statusIcon = '✅';
+                        } else if (isSelected && !isCorrect) {
+                            extraClass = 'wrong';
+                            statusIcon = '❌';
+                        } else if (!isSelected && isCorrect) {
+                            extraClass = 'revealed-correct';
+                            statusIcon = '✅ (correta)';
+                        }
+                    }
+
+                    html += `
+                        <div class="alternative ${extraClass} ${disabledClass}" onclick="selectAlternative(${index}, '${alt.letter}')" id="alt-${index}-${altIndex}">
+                            <span class="letter">${alt.letter}.</span>
+                            <span class="text">${alt.text}</span>
+                            <span class="status-icon">${statusIcon}</span>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+
+                // Explicação de TODAS as alternativas (se respondida)
+                if (answers[index] !== undefined) {
+                    const selectedLetter = answers[index];
+                    const isSelectedCorrect = selectedLetter === q.correct;
+
+                    // Ordena as alternativas para exibição: primeiro a selecionada, depois as demais
+                    const sortedAlts = [...q.alternatives];
+                    sortedAlts.sort((a, b) => {
+                        if (a.letter === selectedLetter) return -1;
+                        if (b.letter === selectedLetter) return 1;
+                        return a.letter.localeCompare(b.letter);
+                    });
+
+                    sortedAlts.forEach((alt) => {
+                        const exp = q.explanations[alt.letter];
+                        if (!exp) return;
+
+                        const isCorrect = alt.letter === q.correct;
+                        const isSelected = alt.letter === selectedLetter;
+                        const isUserCorrect = isSelected && isCorrect;
+
+                        let headerText = '';
+                        let tagClass = '';
+
+                        if (isSelected && isCorrect) {
+                            headerText = '✅ Você acertou!';
+                            tagClass = 'tag-correct';
+                        } else if (isSelected && !isCorrect) {
+                            headerText = '❌ Você errou!';
+                            tagClass = 'tag-wrong';
+                        } else if (!isSelected && isCorrect) {
+                            headerText = '💡 Alternativa correta';
+                            tagClass = 'tag-correct';
+                        } else {
+                            headerText = '📘 Alternativa incorreta';
+                            tagClass = 'tag-wrong';
+                        }
+
+                        html += `
+                            <div class="explanation-block visible" id="exp-${index}-${alt.letter}">
+                                <div class="exp-header">
+                                    <span class="tag ${tagClass}">${alt.letter}</span>
+                                    ${headerText} – <span class="tag tag-concept">${exp.concept}</span>
+                                </div>
+                                ${exp.analogy ? `<div class="analogy">💡 ${exp.analogy}</div>` : ''}
+                                ${exp.example ? `<div class="example">${exp.example}</div>` : ''}
+                                <div class="justification"><strong>Justificativa:</strong> ${exp.justification}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Navegação inferior
+                const isFirst = index === 0;
+                const isLast = index === totalQuestions - 1;
+                const statusText = answers[index] !== undefined ? '✅ Respondida' : '⏳ Pendente';
+
+                html += `
+                    <div class="bottom-nav">
+                        <button class="btn-secondary" onclick="goToQuestion(${index - 1})" ${isFirst ? 'disabled' : ''}>◀ Anterior</button>
+                        <span class="info">${index + 1} de ${totalQuestions} • ${statusText}</span>
+                        <button class="btn-primary" onclick="goToQuestion(${index + 1})" ${isLast ? 'disabled' : ''}>Próxima ▶</button>
+                    </div>
+                `;
+
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+
+            updateProgress();
+            updateNavButtons();
+        }
+
+        function selectAlternative(qIndex, letter) {
+            if (answers[qIndex] !== undefined) return;
+            answers[qIndex] = letter;
+            renderQuestions();
+
+            if (Object.keys(answers).length === totalQuestions) {
+                setTimeout(showSummary, 600);
+            }
+        }
+
+        function goToQuestion(index) {
+            if (index < 0 || index >= totalQuestions) return;
+            currentQuestion = index;
+
+            document.querySelectorAll('.question-card').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+
+            updateProgress();
+            updateNavButtons();
+
+            const target = document.getElementById(`question-${index}`);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function updateProgress() {
+            const answered = Object.keys(answers).length;
+            const pct = (answered / totalQuestions) * 100;
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('currentLabel').textContent =
+                `Questão ${currentQuestion + 1} de ${totalQuestions} • ${answered}/${totalQuestions} respondidas`;
+        }
+
+        function updateNavButtons() {
+            const container = document.getElementById('navButtons');
+            container.innerHTML = '';
+
+            for (let i = 0; i < totalQuestions; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i + 1;
+                btn.className = i === currentQuestion ? 'active' : '';
+
+                if (answers[i] !== undefined) {
+                    const isCorrect = answers[i] === questionsData[i].correct;
+                    btn.classList.add(isCorrect ? 'answered-correct' : 'answered-wrong');
+                }
+
+                btn.onclick = () => goToQuestion(i);
+                container.appendChild(btn);
+            }
+        }
+
+        function showSummary() {
+            document.getElementById('questionsContainer').style.display = 'none';
+            document.getElementById('summary').classList.add('visible');
+
+            let correct = 0;
+            let wrong = 0;
+            let unanswered = 0;
+
+            questionsData.forEach((q, i) => {
+                if (answers[i] === undefined) {
+                    unanswered++;
+                } else if (answers[i] === q.correct) {
+                    correct++;
+                } else {
+                    wrong++;
+                }
+            });
+
+            const pct = Math.round((correct / totalQuestions) * 100);
+            document.getElementById('scoreCircle').textContent = pct + '%';
+            document.getElementById('scoreText').textContent = `Você acertou ${correct} de ${totalQuestions} questões`;
+            document.getElementById('correctCount').textContent = correct;
+            document.getElementById('wrongCount').textContent = wrong;
+            document.getElementById('unansweredCount').textContent = unanswered;
+
+            const circle = document.getElementById('scoreCircle');
+            if (pct >= 70) {
+                circle.style.borderColor = '#2e7d32';
+                circle.style.color = '#2e7d32';
+            } else if (pct >= 40) {
+                circle.style.borderColor = '#e65100';
+                circle.style.color = '#e65100';
+            } else {
+                circle.style.borderColor = '#c62828';
+                circle.style.color = '#c62828';
+            }
+        }
+
+        function restartQuiz() {
+            answers = {};
+            currentQuestion = 0;
+            document.getElementById('questionsContainer').style.display = 'block';
+            document.getElementById('summary').classList.remove('visible');
+            renderQuestions();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // INICIALIZAÇÃO
+        // ============================================================
+
+        renderQuestions();
+    </script>
+
+</body>
+</html>

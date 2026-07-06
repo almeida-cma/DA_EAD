@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação de POO - Sistema de Biblioteca</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f0eb;
+            color: #1a1a2e;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            background: linear-gradient(135deg, #2c3e7a, #3d5a99);
+            border-radius: 16px;
+            margin-bottom: 30px;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+        .header h1 span {
+            color: #ffd54f;
+        }
+        .header p {
+            font-size: 1.05rem;
+            opacity: 0.9;
+        }
+        .header .badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8e0d8;
+        }
+
+        .progress-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .progress-info span {
+            font-weight: 600;
+            color: #2c3e7a;
+        }
+        .progress-bar-bg {
+            width: 300px;
+            height: 8px;
+            background: #e8e0d8;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2c3e7a, #5a7fc0);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .nav-buttons button {
+            background: #f0ebe6;
+            border: 2px solid #d5cdc4;
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            min-width: 32px;
+        }
+        .nav-buttons button:hover {
+            background: #e0d8d0;
+            border-color: #2c3e7a;
+        }
+        .nav-buttons button.active {
+            background: #2c3e7a;
+            color: #fff;
+            border-color: #2c3e7a;
+        }
+        .nav-buttons button.answered-correct {
+            border-color: #2e7d32;
+            background: #e8f5e9;
+        }
+        .nav-buttons button.answered-wrong {
+            border-color: #c62828;
+            background: #ffebee;
+        }
+
+        .question-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 32px 36px;
+            border: 1px solid #e8e0d8;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            margin-bottom: 24px;
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .question-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-number {
+            display: inline-block;
+            background: #2c3e7a;
+            color: #fff;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            margin-bottom: 24px;
+            color: #1a1a2e;
+        }
+        .question-text strong {
+            color: #2c3e7a;
+        }
+
+        .alternatives {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .alternative {
+            background: #f8f5f2;
+            border: 2px solid #d5cdc4;
+            border-radius: 12px;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .alternative:hover:not(.disabled) {
+            border-color: #8a7a6a;
+            background: #f0ebe6;
+        }
+        .alternative.correct {
+            border-color: #2e7d32;
+            background: #e8f5e9;
+        }
+        .alternative.wrong {
+            border-color: #c62828;
+            background: #ffebee;
+        }
+        .alternative.revealed-correct {
+            border-color: #2e7d32;
+            background: #f1f8e9;
+        }
+        .alternative.disabled {
+            cursor: default;
+            opacity: 0.85;
+        }
+        .alternative .letter {
+            display: inline-block;
+            font-weight: 700;
+            color: #2c3e7a;
+            margin-right: 12px;
+            min-width: 20px;
+        }
+        .alternative .text {
+            color: #1a1a2e;
+        }
+        .alternative .status-icon {
+            float: right;
+            font-size: 1.2rem;
+        }
+
+        /* Explicação para CADA alternativa */
+        .explanation-block {
+            background: #f8f5f2;
+            border-radius: 12px;
+            padding: 16px 20px;
+            border-left: 5px solid #2c3e7a;
+            margin-top: 12px;
+            display: none;
+        }
+        .explanation-block.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        .explanation-block .exp-header {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+        .explanation-block .exp-header .tag {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+        .tag-correct {
+            background: #c8e6c9;
+            color: #1b5e20;
+        }
+        .tag-wrong {
+            background: #ffcdd2;
+            color: #b71c1c;
+        }
+        .tag-concept {
+            background: #bbdefb;
+            color: #0d47a1;
+        }
+        .explanation-block .analogy {
+            background: #fff8e1;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border-left: 3px solid #f9a825;
+            margin: 6px 0;
+            color: #4e342e;
+            font-style: italic;
+        }
+        .explanation-block .example {
+            background: #ffffff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+            color: #1a1a2e;
+            margin: 6px 0;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            border: 1px solid #e0d8d0;
+        }
+        .explanation-block .justification {
+            color: #1a1a2e;
+            margin-top: 4px;
+            line-height: 1.6;
+        }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .bottom-nav button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #2c3e7a;
+            color: #fff;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #1a2a5a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 62, 122, 0.3);
+        }
+        .btn-secondary {
+            background: #e8e0d8;
+            color: #333;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #d5cdc4;
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .bottom-nav .info {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .summary {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 36px;
+            border: 1px solid #e8e0d8;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            display: none;
+            text-align: center;
+        }
+        .summary.visible {
+            display: block;
+            animation: fadeIn 0.6s ease;
+        }
+        .summary h2 {
+            color: #1a1a2e;
+            font-size: 1.8rem;
+        }
+        .summary .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #f5f0eb;
+            border: 5px solid #2c3e7a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #2c3e7a;
+        }
+        .summary .score-text {
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .summary .score-details {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 24px 0;
+            flex-wrap: wrap;
+        }
+        .summary .score-details div {
+            text-align: center;
+        }
+        .summary .score-details .number {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .summary .score-details .label {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        .summary .green {
+            color: #2e7d32;
+        }
+        .summary .red {
+            color: #c62828;
+        }
+        .summary .orange {
+            color: #e65100;
+        }
+        .summary .btn-restart {
+            margin-top: 20px;
+            padding: 12px 40px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            .question-card {
+                padding: 20px 18px;
+            }
+            .question-text {
+                font-size: 0.95rem;
+            }
+            .progress-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .progress-bar-bg {
+                width: 100%;
+            }
+            .nav-buttons {
+                justify-content: center;
+            }
+            .bottom-nav {
+                flex-direction: column;
+            }
+            .bottom-nav button {
+                width: 100%;
+            }
+            .summary .score-details {
+                gap: 20px;
+            }
+            .alternative {
+                padding: 12px 14px;
+                font-size: 0.9rem;
+            }
+            .explanation-block .example {
+                font-size: 0.7rem;
+                padding: 6px 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            .header p {
+                font-size: 0.9rem;
+            }
+            .question-card {
+                padding: 14px 10px;
+            }
+            .explanation-block {
+                padding: 12px 14px;
+            }
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 10px;
+            }
+            .header {
+                background: #2c3e7a !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .alternative.correct {
+                background: #e8f5e9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .alternative.wrong {
+                background: #ffebee !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .explanation-block {
+                display: block !important;
+            }
+            .bottom-nav {
+                display: none !important;
+            }
+            .nav-buttons {
+                display: none !important;
+            }
+            .progress-container {
+                display: none !important;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5f0eb;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c0b8b0;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a09888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <h1>📚 Avaliação de <span>Programação Orientada a Objetos</span></h1>
+            <p>Sistema de Gerenciamento de Biblioteca • 9 questões</p>
+            <span class="badge">🎯 Clique em uma alternativa → veja a explicação de TODAS as opções</span>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-info">
+                <span id="currentLabel">Questão 1 de 9</span>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressFill"></div>
+                </div>
+            </div>
+            <div class="nav-buttons" id="navButtons"></div>
+        </div>
+
+        <div id="questionsContainer"></div>
+
+        <div class="summary" id="summary">
+            <h2>🏆 Resultado Final</h2>
+            <div class="score-circle" id="scoreCircle">0%</div>
+            <div class="score-text" id="scoreText">Você acertou 0 de 9 questões</div>
+            <div class="score-details">
+                <div><div class="number green" id="correctCount">0</div><div class="label">✅ Corretas</div></div>
+                <div><div class="number red" id="wrongCount">0</div><div class="label">❌ Erradas</div></div>
+                <div><div class="number orange" id="unansweredCount">9</div><div class="label">⏳ Não respondidas</div></div>
+            </div>
+            <button class="btn-primary btn-restart" onclick="restartQuiz()">🔄 Refazer Avaliação</button>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        // DADOS COMPLETOS DAS 9 QUESTÕES - TEXTO INTEGRAL
+        // ============================================================
+
+        const questionsData = [{
+            id: 1,
+            text: `Você é um desenvolvedor de software em uma equipe responsável por criar um sistema de gerenciamento para uma biblioteca universitária. O objetivo do sistema é automatizar e facilitar o gerenciamento de livros, empréstimos, e registros de usuários. A biblioteca possui uma vasta coleção de materiais que inclui livros, revistas, e materiais digitais. A eficiência e a organização do sistema são cruciais para atender às necessidades dos estudantes e funcionários da universidade.<br><br>Seu desafio é desenvolver uma parte crítica do sistema: a funcionalidade de catalogação e busca de livros. Você precisa implementar uma estrutura de classes que represente diferentes tipos de materiais (livros, revistas, materiais digitais) e permita operações como adicionar novos itens, buscar por títulos ou autores, e atualizar informações de itens existentes. A codificação deve ser robusta, flexível e facilmente expansível para futuras funcionalidades.<br><br>Você decide usar a programação orientada a objetos para este projeto. As classes principais incluirão <strong>Item</strong>, <strong>Livro</strong>, <strong>Revista</strong>, e <strong>MaterialDigital</strong>, com Livro e Revista herdados de Item. Cada classe terá atributos específicos, como título, autor e ISBN para livros, e métodos como adicionarItem, buscarItem, e atualizarItem. A orientação a objetos permite reutilizar código, facilitar a manutenção e expandir o sistema no futuro com novas funcionalidades, como empréstimos e devoluções de itens.<br><br><strong>Qual abordagem de programação orientada a objetos seria mais benéfica para o desenvolvimento eficiente do sistema de gerenciamento de biblioteca?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Integrar todos os tipos de materiais em uma estrutura de classe unificada para simplificar a arquitetura do sistema.' },
+                { letter: 'B', text: 'Desenvolver classes distintas para cada tipo de material, evitando a utilização de herança para manter a independência entre elas.' },
+                { letter: 'C', text: 'Empregar o princípio de herança para compartilhar funcionalidades comuns entre classes relacionadas, aumentando a eficiência do sistema.' },
+                { letter: 'D', text: 'Limitar a quantidade de métodos em cada classe para simplificar a estrutura do código.' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'Responsabilidade Única (SRP)',
+                    example: `// ❌ Abordagem errada - classe única para tudo\nclass MaterialUnificado {\n    String titulo;\n    String autor;\n    String issn;\n    String isbn;\n    String urlDigital;\n    // ... dezenas de atributos misturados\n    void adicionar() { /* ... */ }\n    void buscar() { /* ... */ }\n    void atualizar() { /* ... */ }\n}`,
+                    analogy: '📦 Imagine uma única gaveta guardando livros, revistas e CDs juntos, sem separação. Para encontrar algo, você precisa revirar tudo.',
+                    justification: 'Esta abordagem viola o Princípio da Responsabilidade Única (SRP), pois uma única classe teria que gerenciar comportamentos de diferentes tipos de materiais. Isso gera um código de difícil manutenção, com métodos condicionais (if/else) para tratar cada tipo, e qualquer alteração em um tipo pode impactar todos os outros.'
+                },
+                B: {
+                    concept: 'Reutilização de Código e DRY',
+                    example: `// ❌ Abordagem sem herança - repetição de código\nclass Livro {\n    String titulo, autor, isbn;\n    void adicionar() { /* ... */ }\n    void buscar() { /* ... */ }\n}\nclass Revista {\n    String titulo, editora, issn; // repete titulo\n    void adicionar() { /* ... */ } // repete método\n    void buscar() { /* ... */ }    // repete método\n}`,
+                    analogy: '📝 Seria como ter que reescrever a mesma receita do bolo em cada caderno de receitas, em vez de ter uma receita base e fazer pequenas variações.',
+                    justification: 'Criar classes separadas sem herança provoca repetição de código (DRY - Don\'t Repeat Yourself). Atributos comuns como título, data de publicação, e métodos como adicionar() e buscar() seriam duplicados em cada classe. Isso aumenta o custo de manutenção e a probabilidade de erros.'
+                },
+                C: {
+                    concept: 'Herança e Reutilização',
+                    example: `// ✅ Abordagem correta com herança\nclass Item {\n    String titulo;\n    String dataPublicacao;\n    void adicionar() { /* ... */ }\n    void buscar() { /* ... */ }\n}\nclass Livro extends Item {\n    String autor;\n    String isbn;\n}\nclass Revista extends Item {\n    String editora;\n    String issn;\n}\nclass MaterialDigital extends Item {\n    String url;\n    double tamanhoArquivo;\n}`,
+                    analogy: '🧬 A herança funciona como uma "árvore genealógica" de classes. A classe Item é o "tronco" com características comuns, e as subclasses são os "galhos" que herdam e adicionam particularidades.',
+                    justification: '✅ Esta é a abordagem correta. A herança permite que Livro, Revista e MaterialDigital compartilhem atributos e métodos comuns definidos em Item. Vantagens: reutilização de código, menor duplicação, maior facilidade de manutenção e facilidade para adicionar novos tipos de materiais no futuro.'
+                },
+                D: {
+                    concept: 'Coesão vs. Quantidade de Métodos',
+                    example: `// ❌ Ter poucos métodos não significa bom design\nclass Item {\n    String titulo;\n    // Faltam métodos essenciais para o negócio\n    // A classe fica anêmica, sem comportamento\n}`,
+                    analogy: '🔧 Um carro com poucos botões pode ser mais simples, mas se faltar o botão do freio ou do acelerador, ele não cumpre sua função.',
+                    justification: 'Ter poucos métodos não significa ter um bom projeto. O importante é que cada classe possua os métodos necessários para cumprir sua responsabilidade dentro do domínio do problema. Limitar artificialmente o número de métodos pode resultar em classes anêmicas.'
+                }
+            }
+        }, {
+            id: 2,
+            text: `Você é responsável por otimizar um sistema de controle de estoque que tem apresentado problemas de desempenho e manutenção devido à implementação inadequada de técnicas de orientação a objetos. O sistema atual tem classes mal definidas e uma estrutura de herança complexa que torna o código confuso e difícil de modificar. Sua tarefa é reavaliar o design do sistema, aplicando conceitos de orientação a objetos de forma mais eficiente. Isso inclui a refatoração de classes existentes para melhorar a coesão, a reorganização da herança para reduzir a complexidade e o uso de interfaces para promover um design mais modular e flexível.<br><br>Durante a revisão, você decide utilizar padrões de design como <strong>Factory</strong> para a criação de objetos e <strong>Observer</strong> para gerenciar as notificações de mudanças de estoque. Estes padrões ajudam a simplificar a criação de objetos e a comunicação entre diferentes partes do sistema, respectivamente. A aplicação dessas melhorias visa não apenas corrigir os problemas existentes, mas também preparar o sistema para futuras expansões e facilitar a manutenção e o entendimento do código.<br><br><strong>Ao abordar os desafios enfrentados no sistema de controle de estoque, qual estratégia melhoraria a eficiência do desenvolvimento e a qualidade do código?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Integrar todas as operações do sistema em uma classe mestra para facilitar o gerenciamento.' },
+                { letter: 'B', text: 'Continuar com o design de código atual, concentrando-se apenas no aprimoramento pontual do código.' },
+                { letter: 'C', text: 'Adotar uma nova estrutura de código que realça a modularidade e a eficiência na criação de componentes.' },
+                { letter: 'D', text: 'Substituir a abordagem de orientação a objetos por técnicas de programação mais lineares e simples.' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'God Class (Classe Deus)',
+                    example: `// ❌ God Class - tudo em um só lugar\nclass SistemaEstoque {\n    void criarProduto() { /* ... */ }\n    void deletarProduto() { /* ... */ }\n    void atualizarEstoque() { /* ... */ }\n    void notificarClientes() { /* ... */ }\n    void gerarRelatorio() { /* ... */ }\n    void enviarEmail() { /* ... */ }\n    // +50 métodos...\n}`,
+                    analogy: '👑 Uma "God Class" é como um rei que tenta fazer tudo sozinho: governar, cozinhar, limpar, construir casas... No final, ele não faz nada bem.',
+                    justification: 'Centralizar todas as operações em uma única classe cria uma "God Class", que assume múltiplas responsabilidades. Isso aumenta o acoplamento, dificulta a manutenção e viola o SRP.'
+                },
+                B: {
+                    concept: 'Refatoração vs. Correção Pontual',
+                    example: `// ❌ Remendar sem resolver a causa raiz\n// O problema é estrutural, não pontual.\n// Pequenas correções não resolvem a arquitetura defeituosa.`,
+                    analogy: '🏚️ Consertar apenas uma rachadura na parede de uma casa com fundação comprometida não resolve o problema real.',
+                    justification: 'Apenas pequenas melhorias não resolvem problemas estruturais. Quando o projeto está inadequado, com má definição de classes e herança complexa, é necessário realizar uma refatoração profunda.'
+                },
+                C: {
+                    concept: 'Modularidade e Padrões de Projeto',
+                    example: `// ✅ Abordagem modular com padrões de design\n// Factory Pattern - criação centralizada de objetos\nclass ProdutoFactory {\n    Produto criar(Tipo tipo) { /* ... */ }\n}\n// Observer Pattern - notificações desacopladas\nclass EstoqueObserver implements Observer {\n    void update(Estoque estoque) { \n        // reage a mudanças no estoque\n    }\n}`,
+                    analogy: '🏗️ Construir um sistema modular é como montar uma casa com peças de Lego. Cada bloco tem sua função, pode ser substituído independentemente.',
+                    justification: '✅ A proposta correta é modularizar o sistema, utilizar padrões de projeto (Factory para criação, Observer para comunicação desacoplada), melhorar a coesão e reduzir o acoplamento.'
+                },
+                D: {
+                    concept: 'POO vs. Programação Linear',
+                    example: `// ❌ Abandonar POO não resolve problemas de arquitetura\n// Programação linear (procedural) tem dificuldades com:\n// - Manutenção em sistemas complexos\n// - Reutilização de código\n// - Encapsulamento e segurança de dados`,
+                    analogy: '🚲 Trocar um carro por uma bicicleta não resolve o problema de trânsito se a estrada for longa e cheia de subidas.',
+                    justification: 'Abandonar a orientação a objetos em favor de uma abordagem procedural não resolve os problemas de arquitetura. A POO oferece mecanismos valiosos para sistemas complexos.'
+                }
+            }
+        }, {
+            id: 3,
+            text: `Você faz parte de uma equipe de desenvolvimento encarregada de criar um sistema de agendamento de consultas médicas para uma rede de clínicas. O desafio é construir um sistema que permita aos pacientes agendar, reagendar ou cancelar consultas de forma eficiente e intuitiva. A programação orientada a objetos é fundamental para estruturar o sistema, permitindo a criação de classes como <strong>Paciente</strong>, <strong>Consulta</strong>, <strong>Médico</strong> e <strong>Agenda</strong>. Cada uma dessas classes tem atributos específicos e métodos para realizar operações relacionadas, como agendar uma consulta ou buscar disponibilidade de médicos.<br><br>Na implementação, você se concentra na criação de um código que seja fácil de manter e expandir. Por exemplo, a classe Agenda é projetada para interagir com as classes Paciente e Médico, facilitando o agendamento e a gestão de horários disponíveis. Além disso, você implementa funcionalidades como lembretes automáticos de consulta e opções de busca personalizada, melhorando a experiência do usuário. A eficácia do sistema depende da sua habilidade em aplicar os conceitos de orientação a objetos para criar um código modular e robusto.<br><br><strong>Na elaboração do sistema de agendamento de consultas médicas, qual estratégia de desenvolvimento é mais adequada para atender às necessidades funcionais e de manutenção do sistema?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Centralizar o controle do sistema em uma estrutura de classe única para facilitar a gestão.' },
+                { letter: 'B', text: 'Construir uma arquitetura baseada em entidades representativas com funções bem definidas.' },
+                { letter: 'C', text: 'Limitar o emprego de conceitos como herança e interfaces para manter a estrutura do código simplificada.' },
+                { letter: 'D', text: 'Priorizar uma abordagem de codificação mais procedimental, reduzindo o uso de abstrações orientadas a objetos.' }
+            ],
+            correct: 'B',
+            explanations: {
+                A: {
+                    concept: 'Centralização vs. Separação de Responsabilidades',
+                    example: `// ❌ Classe única para todo o sistema\nclass SistemaAgendamento {\n    // Atributos de Paciente, Médico, Consulta, Agenda...\n    // Métodos de todos os domínios misturados\n    void agendar() { /* ... */ }\n    void cadastrarPaciente() { /* ... */ }\n    void cadastrarMedico() { /* ... */ }\n    void cancelar() { /* ... */ }\n}`,
+                    analogy: '🏢 Uma empresa onde o CEO faz o trabalho de todos os funcionários: atende clientes, faz contabilidade, limpa o escritório... Tudo em uma pessoa só.',
+                    justification: 'Uma única classe controlando todo o sistema gera excesso de responsabilidades, dificulta a manutenção e viola o princípio da coesão.'
+                },
+                B: {
+                    concept: 'Modelagem de Domínio e Entidades',
+                    example: `// ✅ Modelagem correta - cada entidade com sua responsabilidade\nclass Paciente { String nome; String cpf; /* ... */ }\nclass Medico { String nome; String crm; /* ... */ }\nclass Consulta { Paciente paciente; Medico medico; LocalDateTime data; /* ... */ }\nclass Agenda { List<Consulta> consultas; boolean verificarDisponibilidade(Medico, data); /* ... */ }`,
+                    analogy: '🏥 Um hospital bem organizado tem departamentos separados: recepção, enfermaria, farmácia, laboratório. Cada um com sua função.',
+                    justification: '✅ A POO recomenda representar entidades do mundo real através de classes específicas com responsabilidades bem definidas. Paciente, Médico, Consulta e Agenda são entidades distintas.'
+                },
+                C: {
+                    concept: 'Herança e Interfaces como Ferramentas',
+                    example: `// Herança e interfaces são recursos poderosos\ninterface Agendavel {\n    void agendar(LocalDateTime data);\n    void cancelar();\n}\n// Classes podem implementar interfaces para ganhar flexibilidade`,
+                    analogy: '🔧 Limitar o uso de herança e interfaces é como ter uma caixa de ferramentas completa, mas decidir usar apenas o martelo para tudo.',
+                    justification: 'Herança e interfaces são recursos importantes da POO. Limitá-los sem necessidade reduz a flexibilidade do sistema.'
+                },
+                D: {
+                    concept: 'POO vs. Programação Procedural',
+                    example: `// ❌ Abordagem procedural para agendamento\nfunction agendarConsulta(paciente, medico, data) {\n    // verifica disponibilidade, cria registro...\n}\n// Dificuldade em manter estado e comportamentos associados`,
+                    analogy: '📋 Programação procedural para um sistema de agendamento seria como usar uma planilha manual em vez de um sistema informatizado.',
+                    justification: 'Programação procedural não atende tão bem sistemas complexos quanto a orientação a objetos. A POO permite encapsular dados e comportamentos juntos.'
+                }
+            }
+        }, {
+            id: 4,
+            text: `Após o sucesso na implementação do sistema básico de agendamento de consultas médicas, você recebe a tarefa de expandi-lo com um módulo de <strong>feedback e avaliação</strong>. Este módulo permitirá que os pacientes avaliem suas consultas e forneçam feedback sobre os médicos e serviços. Para isso, você decide criar novas classes como <strong>Avaliação</strong> e <strong>Feedback</strong>, integrando-as ao sistema existente. Cada classe possui métodos específicos para capturar e processar as avaliações dos pacientes, e você trabalha para garantir que estas novas classes interajam de maneira eficaz com as classes já existentes, como Paciente e Consulta, mantendo os princípios de orientação a objetos.<br><br>A chave para o sucesso desta expansão é garantir que o novo módulo de feedback seja integrado de forma suave ao sistema existente, proporcionando uma experiência de usuário coesa. Você também implementa funcionalidades que permitem aos médicos e à administração da clínica visualizar e responder ao feedback recebido. Além disso, dedica-se a realizar testes extensivos para garantir que a introdução do novo módulo não afete a funcionalidade existente do sistema de agendamento e que as novas classes mantenham a modularidade e a manutenibilidade do código.<br><br><strong>Qual é a estratégia mais adequada para integrar um novo módulo de avaliação ao sistema de agendamento de consultas médicas existente?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Implementar o módulo de avaliação de forma independente, sem interligação direta com as funcionalidades existentes.' },
+                { letter: 'B', text: 'Agrupar todas as novidades do módulo em uma única classe para facilitar a integração no sistema.' },
+                { letter: 'C', text: 'Construir componentes dedicados para o módulo de avaliação, assegurando a compatibilidade e integração com o sistema atual.' },
+                { letter: 'D', text: 'Modificar diretamente as classes já existentes, incorporando as funcionalidades de avaliação sem adicionar novas classes.' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'Acoplamento e Integração',
+                    example: `// ❌ Módulo independente - não se comunica com o sistema\nclass Avaliacao {\n    // Não tem referência a Paciente ou Consulta\n    // Não consegue associar avaliação a uma consulta real\n}`,
+                    analogy: '🔌 Um módulo totalmente independente seria como comprar um sistema de som que não tem entrada para conectar em nenhum dispositivo existente.',
+                    justification: 'Um módulo totalmente independente não conseguiria interagir corretamente com pacientes e consultas. A avaliação precisa estar associada a uma consulta específica.'
+                },
+                B: {
+                    concept: 'Coesão e Responsabilidade Única',
+                    example: `// ❌ Tudo em uma classe - baixa coesão\nclass ModuloAvaliacao {\n    // Métodos de avaliação, feedback, resposta, relatório...\n    // Tudo misturado em uma única classe\n}`,
+                    analogy: '🗄️ Colocar todas as funcionalidades em uma única classe é como ter uma única gaveta para documentos, ferramentas e roupas.',
+                    justification: 'Colocar todas as funcionalidades do módulo em uma única classe aumenta a complexidade, reduz a coesão e dificulta a manutenção.'
+                },
+                C: {
+                    concept: 'Modularidade e Open/Closed Principle',
+                    example: `// ✅ Componentes dedicados integrados ao sistema\nclass Avaliacao {\n    Consulta consulta; // referência à consulta avaliada\n    Paciente paciente; // quem avaliou\n    int nota;\n    String comentario;\n}\nclass Feedback {\n    Avaliacao avaliacao;\n    Medico medico; // médico que recebeu feedback\n    String resposta;\n}\n// Classes existentes (Paciente, Consulta) permanecem inalteradas`,
+                    analogy: '🧩 Construir componentes dedicados e integrá-los é como adicionar uma nova peça a um quebra-cabeça, sem precisar alterar as peças já encaixadas.',
+                    justification: '✅ Criar novas classes (Avaliação, Feedback) mantendo integração com o restante do sistema segue os princípios da POO. Respeita o Open/Closed Principle.'
+                },
+                D: {
+                    concept: 'Open/Closed Principle (OCP)',
+                    example: `// ❌ Modificar classe existente - viola OCP\nclass Consulta {\n    // ... atributos existentes\n    int nota; // novo campo\n    String comentario; // novo campo\n    void avaliar() { /* ... */ } // novo método\n    // A classe Consulta agora tem responsabilidades extras\n}`,
+                    analogy: '🔧 Modificar uma classe existente para adicionar novas funcionalidades é como abrir uma máquina complexa para adicionar uma peça nova.',
+                    justification: 'Modificar diretamente as classes existentes viola o princípio Open/Closed. É preferível expandir o sistema através de novas classes e associações.'
+                }
+            }
+        }, {
+            id: 5,
+            text: `Você, um desenvolvedor de software experiente em técnicas de orientação a objetos, é confrontado com a tarefa de se adaptar a um novo ambiente de desenvolvimento desktop para um projeto de sistema de gestão empresarial.<br><br>Este novo ambiente oferece ferramentas e recursos avançados que são diferentes dos que você está acostumado. Sua primeira tarefa é familiarizar-se com a interface do ambiente, entender suas funcionalidades específicas e aprender a configurar eficientemente o espaço de trabalho para otimizar o fluxo de desenvolvimento. Isso inclui compreender o <strong>sistema de build</strong>, <strong>gerenciamento de dependências</strong> e <strong>ferramentas de depuração</strong> que são cruciais para o desenvolvimento eficiente de aplicações desktop.<br><br>Você enfrenta o desafio de migrar seu conhecimento e experiência prévios para este novo ambiente, buscando maneiras de aproveitar ao máximo suas características para melhorar a qualidade e eficiência do seu trabalho. Isso envolve explorar recursos de automação, personalização do ambiente de desenvolvimento e integração com ferramentas de controle de versão. Além disso, você se dedica a aprender sobre práticas recomendadas específicas para este ambiente para garantir que você esteja desenvolvendo software de acordo com os padrões atuais da indústria.<br><br><strong>Ao se deparar com o desafio de trabalhar em um novo ambiente de desenvolvimento desktop, qual é a estratégia mais benéfica para um desenvolvedor de sistemas de gestão empresarial?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Limitar-se às ferramentas e técnicas já conhecidas, evitando a complexidade de novas funcionalidades.' },
+                { letter: 'B', text: 'Focar primordialmente no domínio de atalhos de teclado e técnicas de aumento de produtividade.' },
+                { letter: 'C', text: 'Dedicar-se a entender e utilizar os recursos avançados oferecidos pelo novo ambiente para aprimorar o processo de desenvolvimento.' },
+                { letter: 'D', text: 'Aplicar as mesmas configurações e métodos utilizados em ambientes antigos, sem adaptações ao novo sistema.' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'Curva de Aprendizado e Inovação',
+                    example: `// ❌ Manter-se no conhecido impede evolução\n// Ignorar: build automático, debug avançado, CI/CD\n// Resultado: produtividade menor, código menos robusto`,
+                    analogy: '🚗 Continuar dirigindo um carro antigo com mapa de papel, mesmo tendo um GPS moderno disponível.',
+                    justification: 'Limitar-se ao conhecimento antigo impede aproveitar os novos recursos. O desenvolvedor que não se atualiza fica obsoleto e menos produtivo.'
+                },
+                B: {
+                    concept: 'Produtividade vs. Competência',
+                    example: `// Atalhos ajudam, mas não substituem conhecimento profundo\n// Saber Ctrl+C e Ctrl+V não significa saber programar bem`,
+                    analogy: '⌨️ Saber atalhos de teclado é como saber dirigir um carro, mas não entender de mecânica.',
+                    justification: 'Atalhos ajudam na produtividade, mas representam apenas uma pequena parte do ambiente. O desenvolvedor precisa entender todo o ecossistema.'
+                },
+                C: {
+                    concept: 'Aprendizado Contínuo e Ferramentas',
+                    example: `// ✅ Explorar recursos avançados\n// - Sistema de build (Maven/Gradle): gerenciamento de dependências\n// - Debug avançado: breakpoints condicionais, watchpoints\n// - Integração com Git: merge, rebase, hooks\n// - Automação: scripts de build, testes automatizados`,
+                    analogy: '🛠️ Aprender a usar todas as ferramentas de uma oficina moderna, não apenas o martelo e a chave de fenda.',
+                    justification: '✅ O desenvolvedor deve conhecer ferramentas de build, depuração, gerenciamento de dependências, integração com Git e automação.'
+                },
+                D: {
+                    concept: 'Adaptação vs. Rigidez',
+                    example: `// ❌ Mesmas configurações, mesmo em ambientes diferentes\n// Isso pode causar incompatibilidades e perder oportunidades`,
+                    analogy: '🌱 Usar a mesma técnica de plantio em solos diferentes é um erro. Cada ambiente requer adaptações.',
+                    justification: 'Cada ambiente possui particularidades. Reutilizar configurações antigas sem adaptação normalmente não produz bons resultados.'
+                }
+            }
+        }, {
+            id: 6,
+            text: `A fase recente de desenvolvimento do sistema de gerenciamento de biblioteca revelou problemas significativos devido à aplicação inadequada das técnicas de orientação a objetos. Isso resultou em uma estrutura de código complexa e de difícil manutenção, com classes superlotadas e uma lógica de negócios confusa. Sua tarefa é revisar o sistema, desmembrar classes sobrecarregadas e realinhar a implementação com os princípios da programação orientada a objetos. Isso envolve criar classes mais focadas, cada uma com uma única responsabilidade, e usar herança e interfaces de forma eficaz para melhorar a modularidade do sistema.<br><br>Durante a refatoração, você decide implementar padrões de design como o <strong>Decorator</strong> para adicionar funcionalidades a objetos de maneira dinâmica e o <strong>Composite</strong> para construir estruturas de objetos em árvore. Essas mudanças visam não apenas resolver os problemas identificados, mas também tornar o código mais flexível e adaptável a futuras mudanças, mantendo um alto nível de coesão e baixo acoplamento entre as classes.<br><br><strong>Ao enfrentar desafios com a estrutura atual do sistema de gerenciamento de biblioteca, qual estratégia seria mais benéfica para melhorar a eficiência do código?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Condensar as operações do sistema em poucas classes para facilitar o gerenciamento.' },
+                { letter: 'B', text: 'Adotar uma abordagem procedural pura, afastando-se dos conceitos de orientação a objetos.' },
+                { letter: 'C', text: 'Implementar uma reorganização do código que enfatiza a claridade e a independência funcional.' },
+                { letter: 'D', text: 'Dispensar a utilização de herança e polimorfismo, favorecendo um design de código mais simples.' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'Coesão vs. Condensação',
+                    example: `// ❌ Condensar em poucas classes piora o problema\n// Classes já estão superlotadas, condensar mais só aumenta o caos`,
+                    analogy: '📦 Pegar várias caixas bagunçadas e colocar tudo em uma única caixa maior não organiza as coisas.',
+                    justification: 'Poucas classes grandes aumentam o acoplamento e reduzem a coesão. O problema atual já é de classes superlotadas; condensar ainda mais só pioraria a situação.'
+                },
+                B: {
+                    concept: 'POO vs. Procedural',
+                    example: `// ❌ Abandonar POO elimina benefícios como:\n// - Encapsulamento (proteção de dados)\n// - Polimorfismo (flexibilidade)\n// - Herança (reutilização)`,
+                    analogy: '🌉 Trocar uma ponte de concreto por uma de madeira não resolve problemas de manutenção.',
+                    justification: 'Voltar para programação procedural elimina benefícios importantes da POO. O problema não é a POO em si, mas sua aplicação inadequada.'
+                },
+                C: {
+                    concept: 'Refatoração com Coesão e Baixo Acoplamento',
+                    example: `// ✅ Reorganização com padrões de design\n// Decorator: adicionar funcionalidades (ex: reserva, empréstimo)\n// Composite: estruturas hierárquicas (ex: categorias de livros)\ninterface Item { String getDescricao(); }\nclass Livro implements Item { /* ... */ }\nclass ItemEmprestavel extends ItemDecorator {\n    // Adiciona funcionalidade de empréstimo dinamicamente\n}`,
+                    analogy: '🧹 Reorganizar um armário bagunçado, separando roupas por tipo e estação.',
+                    justification: '✅ Refatorar para criar classes menores, independentes e bem definidas melhora clareza, manutenção, reutilização, com baixo acoplamento e alta coesão.'
+                },
+                D: {
+                    concept: 'Herança e Polimorfismo como Ferramentas',
+                    example: `// ❌ Dispensar herança e polimorfismo\n// Perde-se a capacidade de tratar objetos de forma uniforme\n// Ex: List<Item> - não funcionaria sem polimorfismo`,
+                    analogy: '🔄 Polimorfismo é como ter um controle remoto universal que funciona com diferentes aparelhos (TV, som, DVD).',
+                    justification: 'Herança e polimorfismo são recursos importantes da POO. Dispensá-los sem necessidade reduz flexibilidade e capacidade de reutilização.'
+                }
+            }
+        }, {
+            id: 7,
+            text: `Você é um desenvolvedor de software trabalhando em um sistema de gerenciamento de projetos que tem enfrentado problemas de eficiência e escalabilidade. Uma análise do código revela que a aplicação das técnicas de orientação a objetos não foi feita de maneira ótima. As classes estão pouco coesas, com múltiplas responsabilidades, e a herança foi usada de forma inadequada, levando a um alto acoplamento entre componentes. Sua tarefa é revisar e refatorar o código, reestruturando as classes para garantir que cada uma tenha uma única responsabilidade e utilizando corretamente a herança e composição para melhorar a modularidade do sistema.<br><br>Durante a refatoração, você introduz padrões de design orientados a objetos, como o padrão <strong>Singleton</strong> para instâncias únicas onde necessário, e o padrão <strong>Observer</strong> para melhorar a comunicação entre as classes sem aumentar o acoplamento. Essas mudanças visam não apenas corrigir os problemas identificados, mas também facilitar futuras manutenções e expansões do sistema. Além disso, você se dedica a realizar testes unitários extensivos para garantir a estabilidade do sistema após as mudanças.<br><br><strong>Qual estratégia é mais eficaz para melhorar o desempenho e a organização do sistema de gerenciamento de projetos em desenvolvimento?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Concentrar todas as operações principais em poucas classes para reduzir a complexidade do código.' },
+                { letter: 'B', text: 'Manter a arquitetura de código atual, focando em otimizações menores sem alterar a estrutura principal.' },
+                { letter: 'C', text: 'Reorganizar o código para distribuir as responsabilidades de forma mais efetiva e incorporar técnicas apropriadas para melhorar a interação entre os componentes.' },
+                { letter: 'D', text: 'Substituir a abordagem orientada a objetos por um estilo de programação mais linear e direto.' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'Responsabilidade Única (SRP)',
+                    example: `// ❌ Concentrar em poucas classes - viola SRP\n// O problema atual já é de baixa coesão\n// Concentrar só piora o acoplamento`,
+                    analogy: '👨‍💼 Um gerente que acumula as funções de todos os seus subordinados: ele não consegue fazer nada direito.',
+                    justification: 'Concentrar todas as operações em poucas classes piora o problema de baixa coesão e alto acoplamento. O que se busca é exatamente o oposto.'
+                },
+                B: {
+                    concept: 'Refatoração Estrutural',
+                    example: `// ❌ Otimizações pontuais não resolvem problemas estruturais\n// A herança inadequada e o alto acoplamento são problemas de arquitetura`,
+                    analogy: '🏗️ Fazer pequenos reparos em um prédio com fundação comprometida não resolve o problema.',
+                    justification: 'Pequenas melhorias não resolvem problemas arquiteturais. É necessário uma refatoração estrutural profunda.'
+                },
+                C: {
+                    concept: 'SRP, Composição e Padrões de Design',
+                    example: `// ✅ Reorganização com padrões\n// Singleton: garantia de instância única (ex: GerenciadorProjetos)\n// Observer: comunicação desacoplada (ex: notificações de mudanças)\ninterface Observador {\n    void atualizar(Projeto projeto);\n}\nclass NotificadorEmail implements Observador { /* ... */ }\nclass Projeto {\n    List<Observador> observadores;\n    void adicionarObservador(Observador o) { /* ... */ }\n    void notificar() { /* ... */ }\n}`,
+                    analogy: '🎯 Redistribuir responsabilidades é como montar uma equipe de projeto com especialistas: cada um tem sua área.',
+                    justification: '✅ Redistribuir responsabilidades e utilizar padrões adequados produz maior coesão, menor acoplamento, facilidade de manutenção e maior escalabilidade.'
+                },
+                D: {
+                    concept: 'POO para Sistemas Complexos',
+                    example: `// ❌ Substituir POO por programação linear\n// Perde-se encapsulamento, polimorfismo e organização\n// Ideal para scripts simples, não para sistemas complexos`,
+                    analogy: '🛠️ Usar uma chave de fenda para todos os parafusos (incluindo os de porca) é ineficiente.',
+                    justification: 'Trocar POO por programação linear não resolve problemas estruturais. A POO é especialmente adequada para sistemas complexos.'
+                }
+            }
+        }, {
+            id: 8,
+            text: `Após se adaptar com sucesso a um novo ambiente de desenvolvimento para aplicações desktop, você agora está encarregado de desenvolver um sistema de reservas online para um hotel.<br><br>Este sistema permitirá aos clientes reservar quartos, verificar a disponibilidade e gerenciar suas estadias. Para isso, você utiliza os princípios da programação orientada a objetos para criar classes como <strong>Cliente</strong>, <strong>Reserva</strong>, <strong>Quarto</strong>, e <strong>Hotel</strong>. Cada classe tem atributos e métodos específicos que refletem suas funções no sistema, como a classe Reserva que contém métodos para criar, alterar e cancelar reservas. A interação entre estas classes é fundamental para o funcionamento harmonioso do sistema.<br><br>Na implementação, você presta atenção especial na eficiência do código e na escalabilidade do sistema. Isso inclui a utilização de padrões de design como o <strong>Factory</strong> para a criação de objetos e o <strong>Singleton</strong> para garantir uma única instância da classe Hotel. O desafio é garantir que o sistema seja robusto, de fácil manutenção e capaz de lidar com um grande número de reservas e clientes simultaneamente, mantendo a integridade dos dados e oferecendo uma experiência de usuário fluida e intuitiva.<br><br><strong>No desenvolvimento do sistema de reservas online, qual abordagem de programação orientada a objetos é essencial para assegurar sua eficácia e escalabilidade?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Centralizar toda a lógica do sistema em uma única classe para simplificar o desenvolvimento.' },
+                { letter: 'B', text: 'Utilizar uma abordagem procedural, evitando o uso de classes e objetos para manter o código mais simples.' },
+                { letter: 'C', text: 'Aplicar padrões de design orientados a objetos e garantir uma interação adequada entre as diferentes classes.' },
+                { letter: 'D', text: 'Evitar padrões de design complexos e focar apenas na funcionalidade básica do sistema de reservas.' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'Centralização vs. Escalabilidade',
+                    example: `// ❌ Classe única - gargalo de desempenho\nclass SistemaHotel {\n    // Tudo em uma classe: clientes, reservas, quartos, pagamentos...\n    // Qualquer alteração afeta todo o sistema\n}`,
+                    analogy: '🏨 Um hotel onde o gerente faz tudo: recepciona, limpa quartos, cozinha, faz manutenção. Quando o hotel cresce, o gerente não dá conta.',
+                    justification: 'Centralizar toda lógica em uma classe cria excesso de responsabilidades e um gargalo de desempenho. Um sistema escalável exige distribuição de responsabilidades.'
+                },
+                B: {
+                    concept: 'POO para Sistemas de Reservas',
+                    example: `// ❌ Abordagem procedural para reservas\nfunction reservarQuarto(idCliente, idQuarto, data) { /* ... */ }\nfunction cancelarReserva(idReserva) { /* ... */ }\n// Dificuldade em manter estado e validações consistentes`,
+                    analogy: '📋 Usar planilhas para gerenciar reservas de um hotel grande. Funciona para pequenos negócios, mas falha quando há centenas de reservas.',
+                    justification: 'Programação procedural dificulta manutenção em sistemas complexos. A POO permite encapsular dados e comportamentos.'
+                },
+                C: {
+                    concept: 'Padrões de Design e Interação entre Classes',
+                    example: `// ✅ Padrões de design e interação adequada\n// Factory: criação de objetos (ReservaFactory, QuartoFactory)\n// Singleton: instância única do Hotel\nclass Hotel {\n    private static Hotel instancia;\n    private List<Quarto> quartos;\n    private List<Reserva> reservas;\n    public static Hotel getInstancia() {\n        if (instancia == null) instancia = new Hotel();\n        return instancia;\n    }\n}\nclass ReservaFactory {\n    public Reserva criarReserva(Cliente c, Quarto q, LocalDate data) { /* ... */ }\n}`,
+                    analogy: '🏗️ Construir um sistema com padrões de design é como construir um hotel com plantas arquitetônicas, engenheiros especializados e processos bem definidos.',
+                    justification: '✅ A utilização de classes especializadas, padrões de projeto (Factory, Singleton) e interação correta entre objetos gera um sistema robusto e escalável.'
+                },
+                D: {
+                    concept: 'Padrões como Melhores Práticas',
+                    example: `// ❌ Evitar padrões "complexos" - perda de boas práticas\n// Padrões como Factory e Singleton são soluções consolidadas\n// para problemas recorrentes em sistemas de reservas`,
+                    analogy: '🧰 Evitar padrões de design é como construir uma casa sem usar projetos estruturais aprovados.',
+                    justification: 'Evitar padrões de design significa abrir mão de soluções consolidadas para problemas comuns.'
+                }
+            }
+        }, {
+            id: 9,
+            text: `Como desenvolvedor experiente em um ambiente de desenvolvimento específico, você agora encara a transição para uma nova plataforma ao trabalhar em um projeto de software educacional. Este ambiente desktop apresenta características distintas, incluindo ferramentas de debug, gerenciamento de dependências e integração com sistemas de controle de versão diferentes. Sua primeira tarefa é familiarizar-se com esse novo ambiente, aprendendo a configurar efetivamente o espaço de trabalho, compreender as nuances das ferramentas disponíveis e adaptar seu estilo de codificação para explorar ao máximo as funcionalidades oferecidas.<br><br>Ao iniciar o desenvolvimento do software educacional, que engloba funcionalidades como tutoriais interativos, testes e rastreamento do progresso dos estudantes, surge a necessidade de compreender como o novo ambiente pode otimizar seu trabalho. Isso inclui explorar recursos como <strong>integração contínua</strong>, <strong>automação de builds</strong> e <strong>testes</strong>, compreendendo como essas ferramentas podem aprimorar a qualidade e a eficiência do desenvolvimento do projeto. A adaptação bem-sucedida ao novo ambiente é crucial para cumprir os prazos do projeto e atender aos requisitos de qualidade e desempenho.<br><br><strong>Ao adaptar-se a um novo ambiente de desenvolvimento desktop para um projeto de software educacional, qual estratégia é mais eficaz para um desenvolvedor?</strong>`,
+            alternatives: [
+                { letter: 'A', text: 'Manter-se restrito às práticas e ferramentas conhecidas do ambiente de desenvolvimento anterior.' },
+                { letter: 'B', text: 'Focar unicamente na aprendizagem de funcionalidades básicas do novo ambiente, evitando recursos avançados.' },
+                { letter: 'C', text: 'Explorar os recursos do novo ambiente, adaptando o estilo de codificação e aproveitando ferramentas como integração contínua e automação de testes.' },
+                { letter: 'D', text: 'Ignorar as ferramentas de automação e integração contínua para manter o controle manual sobre o desenvolvimento.' }
+            ],
+            correct: 'C',
+            explanations: {
+                A: {
+                    concept: 'Evolução Profissional',
+                    example: `// ❌ Restringir-se ao conhecido\n// Ignora: CI/CD, automação de testes, novas ferramentas de debug\n// Resultado: menos produtividade, código de qualidade inferior`,
+                    analogy: '📚 Um professor que usa apenas o livro didático de 20 anos atrás, ignorando novas metodologias e tecnologias educacionais.',
+                    justification: 'Restringir-se ao ambiente anterior impede aproveitar novos recursos que podem aumentar produtividade e qualidade do código.'
+                },
+                B: {
+                    concept: 'Aprofundamento Profissional',
+                    example: `// ❌ Apenas funcionalidades básicas\n// Saber o básico de uma IDE não é suficiente\n// Recursos avançados: debug condicional, profiling, refatoração automatizada`,
+                    analogy: '🎸 Aprender apenas os acordes básicos de violão é suficiente para tocar músicas simples, mas não para se apresentar profissionalmente.',
+                    justification: 'Aprender apenas o básico não atende às necessidades de um projeto profissional. Ferramentas avançadas são essenciais.'
+                },
+                C: {
+                    concept: 'CI/CD e Automação',
+                    example: `// ✅ Explorar recursos avançados\n// - Integração Contínua (CI): builds automatizados a cada commit\n// - Automação de testes: execução automática de testes unitários\n// - Análise estática: identificação de problemas de código\n// - Gerenciamento de dependências: atualização automática de libs`,
+                    analogy: '🏭 Uma fábrica moderna com esteira automatizada, controle de qualidade em cada etapa e integração entre todos os setores.',
+                    justification: '✅ Explorar integração contínua, automação de builds, automação de testes, ferramentas de depuração e gerenciamento de dependências aumenta produtividade e qualidade do software.'
+                },
+                D: {
+                    concept: 'Automação vs. Controle Manual',
+                    example: `// ❌ Ignorar automação\n// - Builds manuais: sujeitos a erro\n// - Testes manuais: lentos e incompletos\n// - Deploy manual: risco de falhas\n// Resultado: mais erros, mais tempo, menos qualidade`,
+                    analogy: '👨‍🌾 Plantar e colher manualmente em vez de usar máquinas agrícolas. Funciona para uma pequena horta, mas inviável para uma grande fazenda.',
+                    justification: 'Ignorar automação aumenta trabalho manual, erros e reduz eficiência. Ferramentas de CI/CD são essenciais para projetos de grande porte.'
+                }
+            }
+        }];
+
+        // ============================================================
+        // LÓGICA DO QUIZ
+        // ============================================================
+
+        let currentQuestion = 0;
+        let answers = {};
+        const totalQuestions = questionsData.length;
+
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            questionsData.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = `question-card ${index === currentQuestion ? 'active' : ''}`;
+                card.id = `question-${index}`;
+
+                let html = `
+                    <div class="question-number">Questão ${index + 1} de ${totalQuestions}</div>
+                    <div class="question-text">${q.text}</div>
+                    <div class="alternatives">
+                `;
+
+                q.alternatives.forEach((alt, altIndex) => {
+                    const isCorrect = alt.letter === q.correct;
+                    const isAnswered = answers[index] !== undefined;
+                    const isSelected = answers[index] === alt.letter;
+                    let extraClass = '';
+                    let statusIcon = '';
+                    let disabledClass = '';
+
+                    if (isAnswered) {
+                        disabledClass = 'disabled';
+                        if (isSelected && isCorrect) {
+                            extraClass = 'correct';
+                            statusIcon = '✅';
+                        } else if (isSelected && !isCorrect) {
+                            extraClass = 'wrong';
+                            statusIcon = '❌';
+                        } else if (!isSelected && isCorrect) {
+                            extraClass = 'revealed-correct';
+                            statusIcon = '✅ (correta)';
+                        }
+                    }
+
+                    html += `
+                        <div class="alternative ${extraClass} ${disabledClass}" onclick="selectAlternative(${index}, '${alt.letter}')" id="alt-${index}-${altIndex}">
+                            <span class="letter">${alt.letter}.</span>
+                            <span class="text">${alt.text}</span>
+                            <span class="status-icon">${statusIcon}</span>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+
+                // Explicação de TODAS as alternativas (se respondida)
+                if (answers[index] !== undefined) {
+                    const selectedLetter = answers[index];
+                    const isSelectedCorrect = selectedLetter === q.correct;
+
+                    // Ordena as alternativas para exibição: primeiro a selecionada, depois as demais
+                    const sortedAlts = [...q.alternatives];
+                    sortedAlts.sort((a, b) => {
+                        if (a.letter === selectedLetter) return -1;
+                        if (b.letter === selectedLetter) return 1;
+                        return a.letter.localeCompare(b.letter);
+                    });
+
+                    sortedAlts.forEach((alt) => {
+                        const exp = q.explanations[alt.letter];
+                        if (!exp) return;
+
+                        const isCorrect = alt.letter === q.correct;
+                        const isSelected = alt.letter === selectedLetter;
+                        const isUserCorrect = isSelected && isCorrect;
+
+                        let headerText = '';
+                        let tagClass = '';
+
+                        if (isSelected && isCorrect) {
+                            headerText = '✅ Você acertou!';
+                            tagClass = 'tag-correct';
+                        } else if (isSelected && !isCorrect) {
+                            headerText = '❌ Você errou!';
+                            tagClass = 'tag-wrong';
+                        } else if (!isSelected && isCorrect) {
+                            headerText = '💡 Alternativa correta';
+                            tagClass = 'tag-correct';
+                        } else {
+                            headerText = '📘 Alternativa incorreta';
+                            tagClass = 'tag-wrong';
+                        }
+
+                        html += `
+                            <div class="explanation-block visible" id="exp-${index}-${alt.letter}">
+                                <div class="exp-header">
+                                    <span class="tag ${tagClass}">${alt.letter}</span>
+                                    ${headerText} – <span class="tag tag-concept">${exp.concept}</span>
+                                </div>
+                                ${exp.analogy ? `<div class="analogy">💡 ${exp.analogy}</div>` : ''}
+                                ${exp.example ? `<div class="example">${exp.example}</div>` : ''}
+                                <div class="justification"><strong>Justificativa:</strong> ${exp.justification}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Navegação inferior
+                const isFirst = index === 0;
+                const isLast = index === totalQuestions - 1;
+                const statusText = answers[index] !== undefined ? '✅ Respondida' : '⏳ Pendente';
+
+                html += `
+                    <div class="bottom-nav">
+                        <button class="btn-secondary" onclick="goToQuestion(${index - 1})" ${isFirst ? 'disabled' : ''}>◀ Anterior</button>
+                        <span class="info">${index + 1} de ${totalQuestions} • ${statusText}</span>
+                        <button class="btn-primary" onclick="goToQuestion(${index + 1})" ${isLast ? 'disabled' : ''}>Próxima ▶</button>
+                    </div>
+                `;
+
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+
+            updateProgress();
+            updateNavButtons();
+        }
+
+        function selectAlternative(qIndex, letter) {
+            if (answers[qIndex] !== undefined) return;
+            answers[qIndex] = letter;
+            renderQuestions();
+
+            if (Object.keys(answers).length === totalQuestions) {
+                setTimeout(showSummary, 600);
+            }
+        }
+
+        function goToQuestion(index) {
+            if (index < 0 || index >= totalQuestions) return;
+            currentQuestion = index;
+
+            document.querySelectorAll('.question-card').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+
+            updateProgress();
+            updateNavButtons();
+
+            const target = document.getElementById(`question-${index}`);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function updateProgress() {
+            const answered = Object.keys(answers).length;
+            const pct = (answered / totalQuestions) * 100;
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('currentLabel').textContent =
+                `Questão ${currentQuestion + 1} de ${totalQuestions} • ${answered}/${totalQuestions} respondidas`;
+        }
+
+        function updateNavButtons() {
+            const container = document.getElementById('navButtons');
+            container.innerHTML = '';
+
+            for (let i = 0; i < totalQuestions; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i + 1;
+                btn.className = i === currentQuestion ? 'active' : '';
+
+                if (answers[i] !== undefined) {
+                    const isCorrect = answers[i] === questionsData[i].correct;
+                    btn.classList.add(isCorrect ? 'answered-correct' : 'answered-wrong');
+                }
+
+                btn.onclick = () => goToQuestion(i);
+                container.appendChild(btn);
+            }
+        }
+
+        function showSummary() {
+            document.getElementById('questionsContainer').style.display = 'none';
+            document.getElementById('summary').classList.add('visible');
+
+            let correct = 0;
+            let wrong = 0;
+            let unanswered = 0;
+
+            questionsData.forEach((q, i) => {
+                if (answers[i] === undefined) {
+                    unanswered++;
+                } else if (answers[i] === q.correct) {
+                    correct++;
+                } else {
+                    wrong++;
+                }
+            });
+
+            const pct = Math.round((correct / totalQuestions) * 100);
+            document.getElementById('scoreCircle').textContent = pct + '%';
+            document.getElementById('scoreText').textContent = `Você acertou ${correct} de ${totalQuestions} questões`;
+            document.getElementById('correctCount').textContent = correct;
+            document.getElementById('wrongCount').textContent = wrong;
+            document.getElementById('unansweredCount').textContent = unanswered;
+
+            const circle = document.getElementById('scoreCircle');
+            if (pct >= 70) {
+                circle.style.borderColor = '#2e7d32';
+                circle.style.color = '#2e7d32';
+            } else if (pct >= 40) {
+                circle.style.borderColor = '#e65100';
+                circle.style.color = '#e65100';
+            } else {
+                circle.style.borderColor = '#c62828';
+                circle.style.color = '#c62828';
+            }
+        }
+
+        function restartQuiz() {
+            answers = {};
+            currentQuestion = 0;
+            document.getElementById('questionsContainer').style.display = 'block';
+            document.getElementById('summary').classList.remove('visible');
+            renderQuestions();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // INICIALIZAÇÃO
+        // ============================================================
+
+        renderQuestions();
+    </script>
+
+</body>
+</html>
